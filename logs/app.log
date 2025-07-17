@@ -64,3 +64,25 @@
 [2025-07-17 16:28:01] [INFO] Correct developer credentials entered.
 [2025-07-17 16:28:02] [INFO] Switched view to SemesterScreen.
 [2025-07-17 16:28:26] [INFO] Application closed.
+[2025-07-17 17:02:46] [INFO] Starting application from main.py
+[2025-07-17 17:02:47] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 17:02:47] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 17:02:49] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 17:02:49] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 17:03:00] [INFO] Correct developer credentials entered.
+[2025-07-17 17:03:01] [INFO] Switched view to SemesterScreen.
+[2025-07-17 17:03:19] [INFO] Semester data saved to '/home/owais/LearningRobotics/data/semesters.json'
+[2025-07-17 17:03:19] [INFO] Developer added new semester: 'Semester 4'
+[2025-07-17 17:03:28] [INFO] Semester data saved to '/home/owais/LearningRobotics/data/semesters.json'
+[2025-07-17 17:03:28] [INFO] Developer added new semester: 'Semester 5'
+[2025-07-17 17:03:39] [INFO] Semester data saved to '/home/owais/LearningRobotics/data/semesters.json'
+[2025-07-17 17:03:39] [INFO] Developer removed semester: 'None'
+[2025-07-17 17:03:42] [INFO] Application closed.
+[2025-07-17 17:06:10] [INFO] Starting application from main.py
+[2025-07-17 17:06:11] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 17:06:11] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 17:06:12] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 17:06:12] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 17:06:24] [INFO] Correct developer credentials entered.
+[2025-07-17 17:06:25] [INFO] Switched view to SemesterScreen.
+[2025-07-17 17:06:38] [INFO] Application closed.
