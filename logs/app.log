@@ -18,3 +18,49 @@
 [2025-07-17 16:02:47] [INFO] Continue button clicked. Transitioning away from WelcomeWindow.
 [2025-07-17 16:02:47] [INFO] Transition requested to 'SemesterScreen'. Closing application as it's the only screen.
 [2025-07-17 16:02:47] [INFO] Application closed.
+[2025-07-17 16:07:18] [INFO] Starting application from main.py
+[2025-07-17 16:07:18] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 16:07:18] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 16:07:20] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 16:07:20] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 16:07:27] [INFO] Role selected: USER
+[2025-07-17 16:07:33] [INFO] Role selected: DEVELOPER
+[2025-07-17 16:07:41] [INFO] Application closed.
+[2025-07-17 16:10:06] [INFO] Starting application from main.py
+[2025-07-17 16:10:06] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 16:10:06] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 16:10:08] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 16:10:08] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 16:10:21] [INFO] No/Invalid developer credentials. Defaulting to USER role.
+[2025-07-17 16:10:23] [INFO] Application closed.
+[2025-07-17 16:10:34] [INFO] Starting application from main.py
+[2025-07-17 16:10:34] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 16:10:34] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 16:10:36] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 16:10:36] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 16:10:47] [INFO] Correct developer credentials entered.
+[2025-07-17 16:10:48] [INFO] Application closed.
+[2025-07-17 16:17:34] [INFO] Starting application from main.py
+[2025-07-17 16:17:34] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 16:17:34] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 16:17:36] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 16:17:36] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 16:23:46] [INFO] Application closed.
+[2025-07-17 16:23:49] [INFO] Starting application from main.py
+[2025-07-17 16:23:49] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 16:23:49] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 16:23:51] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 16:23:51] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 16:24:01] [INFO] Correct developer credentials entered.
+[2025-07-17 16:24:10] [INFO] Correct developer credentials entered.
+[2025-07-17 16:24:29] [INFO] Application closed.
+[2025-07-17 16:27:49] [INFO] Starting application from main.py
+[2025-07-17 16:27:49] [WARNING] '/home/owais/LearningRobotics/data/semesters.json' not found or invalid. Creating with default data.
+[2025-07-17 16:27:49] [INFO] Semester data saved to '/home/owais/LearningRobotics/data/semesters.json'
+[2025-07-17 16:27:50] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 16:27:50] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 16:27:51] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 16:27:51] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 16:28:01] [INFO] Correct developer credentials entered.
+[2025-07-17 16:28:02] [INFO] Switched view to SemesterScreen.
+[2025-07-17 16:28:26] [INFO] Application closed.

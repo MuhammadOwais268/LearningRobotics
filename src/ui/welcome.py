@@ -112,8 +112,10 @@ class WelcomeWindow(tk.Frame):
             self.current_index += 1
             self.after(120, self.animate_text)
 
+    # Inside the WelcomeWindow class in src/ui/welcome.py
+
     def goto_next(self):
-        """Uses the main controller to switch to the next screen."""
-        logging.info("Continue button clicked. Transitioning away from WelcomeWindow.")
-        # When you re-add SemesterScreen to main.py, this will work.
-        self.controller.show_frame("SemesterScreen")
+        """Uses the main controller to switch to the RoleSelectionScreen."""
+        logging.info("Welcome screen finished. Navigating to role selection.")
+        # THE ONLY CHANGE IS HERE:
+        self.controller.show_frame("RoleSelectionScreen")
