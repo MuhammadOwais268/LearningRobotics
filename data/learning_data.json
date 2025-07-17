@@ -1,7 +1,12 @@
 {
     "Semester 1": {
         "levels": {
-            "Input/Output Operations": {},
+            "Input/Output Operations": {
+                "implementation": {
+                    "explanation": "",
+                    "code": "// File: src/main.cpp\n\n#include <Arduino.h>  // \u2705 This line is required\n\nvoid setup() {\n  pinMode(2, OUTPUT); // GPIO 2 is usually the onboard LED\n}\n\nvoid loop() {\n  digitalWrite(2, HIGH); // Turn LED ON\n  delay(500);            // Wait 500 milliseconds\n  digitalWrite(2, LOW);  // Turn LED OFF\n  delay(500);            // Wait 500 milliseconds\n}\n"
+                }
+            },
             "Variables & Data Types": {}
         }
     },
