@@ -1,7 +1,9 @@
+# File: /home/owais/LearningRobotics/src/ui/implementation.py
 import tkinter as tk
 from tkinter import ttk, messagebox
 import threading, queue, time, subprocess, os, json
 import serial
+import logging
 
 class PlatformIOManager:
     def __init__(self, project_path, output_queue):
@@ -54,9 +56,9 @@ class ImplementationScreen(tk.Frame):
         
         self.last_command = ""
         project_root = os.path.dirname(os.path.abspath(__file__))
-        self.pio_project_path = os.path.join(project_root, '..', 'Robotics')
+        self.pio_project_path = os.path.join(project_root, '..', '..', 'Robotics')
         self.pio_manager = PlatformIOManager(self.pio_project_path, self.output_queue)
-        self.paste_buttons = []  # Store paste buttons for dynamic control
+        self.paste_buttons = []
         self._create_widgets()
         self.bind("<<ShowFrame>>", self.on_show_frame)
 
@@ -89,7 +91,7 @@ class ImplementationScreen(tk.Frame):
         self.update_button_states()
 
         self.terminal_output.config(state='normal')
-        self.terminal_output.delete(1.0,'end')
+        self.terminal_output.delete(1.0, 'end')
         self.terminal_output.config(state='disabled')
         self.output_notebook.select(1)
         
@@ -102,7 +104,7 @@ class ImplementationScreen(tk.Frame):
         self.pio_manager.stop_serial_monitor()
         time.sleep(0.5)
         self.serial_monitor.config(state='normal')
-        self.serial_monitor.delete(1.0,'end')
+        self.serial_monitor.delete(1.0, 'end')
         self.serial_monitor.config(state='disabled')
         self.start_process(self.pio_manager.upload_in_thread, "upload")
 
@@ -194,15 +196,23 @@ class ImplementationScreen(tk.Frame):
         self.upload_button.pack(side='left', padx=20, pady=5)
 
     def load_content(self):
+        if not self.controller.current_semester or not self.controller.current_level:
+            messagebox.showerror("Error", "No semester or level selected.")
+            return
         level_name = self.controller.current_level
         self.header_label.config(text=f"Implementation: {level_name}")
-        impl_data = self.controller.get_data().get(self.controller.current_semester,{}).get("levels",{}).get(level_name,{}).get("implementation",{})
+        data = self.controller.get_data()
+        logging.info(f"Loading implementation data: {data}")
+        semester_data = data.get(self.controller.current_semester, {})
+        level_data = semester_data.get("levels", {}).get(level_name, {})
+        impl_data = level_data.get("implementation", {"explanation": "", "code": ""})
+        
         self.exp_text.config(state='normal')
         self.code_editor.config(state='normal')
-        self.exp_text.delete(1.0,'end')
-        self.code_editor.delete(1.0,'end')
-        self.exp_text.insert('end', impl_data.get("explanation",""))
-        self.code_editor.insert('end', impl_data.get("code",""))
+        self.exp_text.delete(1.0, 'end')
+        self.code_editor.delete(1.0, 'end')
+        self.exp_text.insert('end', impl_data.get("explanation", ""))
+        self.code_editor.insert('end', impl_data.get("code", ""))
         if not self.is_in_edit_mode:
             self.exp_text.config(state='disabled')
             self.code_editor.config(state='disabled')
@@ -222,14 +232,25 @@ class ImplementationScreen(tk.Frame):
         self.update_paste_buttons()
 
     def exit_edit_mode(self, save=True):
+        if not self.controller.current_semester or not self.controller.current_level:
+            messagebox.showerror("Error", "No semester or level selected.")
+            return
         if save:
             data = self.controller.get_data()
-            level_data = data[self.controller.current_semester]["levels"][self.controller.current_level]
-            impl = level_data.setdefault('implementation', {})
+            logging.info(f"Saving implementation data: {data}")
+            semester_data = data.setdefault(self.controller.current_semester, {})
+            levels_data = semester_data.setdefault("levels", {})
+            level_data = levels_data.setdefault(self.controller.current_level, {})
+            impl = level_data.setdefault("implementation", {"explanation": "", "code": ""})
+            
             impl["explanation"] = self.exp_text.get(1.0, 'end-1c')
             impl["code"] = self.code_editor.get(1.0, 'end-1c')
-            self.controller.save_data(data)
-            messagebox.showinfo("Saved", "Implementation content has been updated.")
+            try:
+                self.controller.save_data(data)
+                messagebox.showinfo("Saved", "Implementation content has been updated.")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to save data: {str(e)}")
+                return
 
         self.is_in_edit_mode = False
         self.exp_text.config(state='disabled')
@@ -261,18 +282,17 @@ class ImplementationScreen(tk.Frame):
         if paste_command:
             paste_button = tk.Button(header_frame, text="📋 Paste", command=paste_command)
             self.paste_buttons.append(paste_button)
+            paste_button.pack_forget()
 
         return frame
 
     def update_paste_buttons(self):
-        """Show or hide paste buttons based on developer mode and edit mode."""
         for paste_button in self.paste_buttons:
             paste_button.pack_forget()
             if self.controller.user_role == "developer" and self.is_in_edit_mode:
                 paste_button.pack(side='left', padx=10)
 
     def paste_into_widget(self, target_widget):
-        """Pastes content from the clipboard into the specified text widget."""
         if not self.is_in_edit_mode:
             messagebox.showinfo("Read-Only Mode", "Please click '✏️ Edit Content' before pasting.")
             return
@@ -286,7 +306,7 @@ class ImplementationScreen(tk.Frame):
 
     def create_text_widget(self, parent, bg="#ffffff", fg="#000000", font_family="Courier", wrap='none'):
         text_widget = tk.Text(parent, wrap=wrap, state='disabled', font=(font_family, 11), relief='solid', bd=1, bg=bg, fg=fg, insertbackground=fg)
-        text_widget.pack(fill='both', expand=True, pady=(5,0))
+        text_widget.pack(fill='both', expand=True, pady=(5, 0))
         return text_widget
 
     def create_output_tab(self, notebook, text, bg, fg):
