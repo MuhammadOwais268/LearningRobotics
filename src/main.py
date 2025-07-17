@@ -1,3 +1,5 @@
+# File: main.py
+
 import tkinter as tk
 import logging
 import os
@@ -9,14 +11,21 @@ from ui.role_selection import RoleSelectionScreen
 from ui.semester import SemesterScreen
 from ui.level import LevelScreen
 from ui.concept import ConceptScreen
+# <<< FIX 1: Import the missing ImplementationScreen class >>>
+from ui.implementation import ImplementationScreen
 
-# --- Logging setup (no changes) ---
-# ... (copy your existing logging setup here) ...
+# --- Logging setup ---
+# (Assuming you have your logging setup here)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# <<< FIX 2: Add ImplementationScreen to the SCREENS registry >>>
 SCREENS = {
-    "WelcomeWindow": WelcomeWindow, "RoleSelectionScreen": RoleSelectionScreen,
-    "SemesterScreen": SemesterScreen, "LevelScreen": LevelScreen,
+    "WelcomeWindow": WelcomeWindow,
+    "RoleSelectionScreen": RoleSelectionScreen,
+    "SemesterScreen": SemesterScreen,
+    "LevelScreen": LevelScreen,
     "ConceptScreen": ConceptScreen,
+    "ImplementationScreen": ImplementationScreen, # This line was missing
 }
 
 class LearningRoboticsApp(tk.Tk):
@@ -24,16 +33,16 @@ class LearningRoboticsApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title("Learning Robotics")
-        self.geometry("800x600")
+        self.geometry("900x700") # Increased size slightly for better layout
 
         # --- APPLICATION STATE ---
         self.user_role = None
         self.current_semester = None
         self.current_level = None
-        self.current_path = None
         
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-        self.data_file = os.path.join(project_root, 'data', 'learning_data.json')
+        # Correctly determine project root and data file path
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        self.data_file = os.path.join(project_root, '..', 'data', 'learning_data.json')
         self.app_data = self.get_data()
 
         container = tk.Frame(self)
@@ -46,24 +55,28 @@ class LearningRoboticsApp(tk.Tk):
             frame = F_class(container, self)
             self.frames[F_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
+        
         self.show_frame("WelcomeWindow")
 
     def show_frame(self, frame_name):
-        frame = self.frames[frame_name]
+        logging.info(f"Attempting to switch view to {frame_name}.")
+        frame = self.frames[frame_name] # The error happened here
         frame.event_generate("<<ShowFrame>>")
         frame.tkraise()
-        logging.info(f"Switched view to {frame_name}.")
+        logging.info(f"Successfully switched view to {frame_name}.")
     
     def set_user_role(self, role):
         self.user_role = role
+        logging.info(f"User role set to: '{role}'")
 
     def set_current_semester(self, semester_name):
         self.current_semester = semester_name
         logging.info(f"Current semester set to: '{semester_name}'")
 
-    def set_current_selection(self, level=None, path=None):
-        if level: self.current_level = level
-        if path: self.current_path = path
+    def set_current_selection(self, level=None):
+        if level: 
+            self.current_level = level
+            logging.info(f"Current level set to: '{level}'")
 
     def get_data(self):
         """Loads learning data from the JSON file."""
@@ -71,22 +84,14 @@ class LearningRoboticsApp(tk.Tk):
             with open(self.data_file, 'r') as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
-            # --- THIS IS THE ONLY CHANGE: The new default data structure ---
+            # A default data structure to prevent errors on first run
             default_data = {
-                "Semester 1": {
+                "Fall Semester 2025": {
                     "levels": {
-                        "Serial Printing": {
-                            "description": "Learn to send data from the robot to your computer.",
-                            "concept": {
-                                "explanation": "The Serial Monitor is a tool for communication between your robot and computer. It's essential for debugging and viewing sensor data.",
-                                "code": "// This is the basic command to print text.\nSerial.println(\"Your Message Here\");",
-                                "output": "Your Message Here"
-                            },
-                            "implementation": {
-                                "explanation": "This complete Arduino sketch initializes serial communication in setup() and repeatedly prints 'Hello, World!' in loop().",
-                                "code": "void setup() {\n  // Start serial communication at 9600 bits per second:\n  Serial.begin(9600);\n}\n\nvoid loop() {\n  // Print data to the serial port with a new line:\n  Serial.println(\"Hello, World!\");\n  delay(1000); // Wait for a second\n}",
-                                "output": "Hello, World!\nHello, World!\n(repeating every second)"
-                            }
+                        "First Level": {
+                            "description": "An example level.",
+                            "concept": {"explanation": "Concept explanation...", "code": "// Concept code...", "output": ""},
+                            "implementation": {"explanation": "Implementation explanation...", "code": "// Implementation code..."}
                         }
                     }
                 }
