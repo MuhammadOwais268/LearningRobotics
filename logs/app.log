@@ -86,3 +86,23 @@
 [2025-07-17 17:06:24] [INFO] Correct developer credentials entered.
 [2025-07-17 17:06:25] [INFO] Switched view to SemesterScreen.
 [2025-07-17 17:06:38] [INFO] Application closed.
+[2025-07-17 17:41:37] [INFO] Starting application from main.py
+[2025-07-17 17:41:37] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 17:41:37] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 17:41:39] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 17:41:39] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 17:41:53] [INFO] No/Invalid developer credentials. Defaulting to USER role.
+[2025-07-17 17:41:54] [INFO] Switched view to SemesterScreen.
+[2025-07-17 17:42:03] [INFO] Application closed.
+[2025-07-17 17:47:15] [INFO] Starting application from main.py
+[2025-07-17 17:47:16] [INFO] Application initialized. Showing WelcomeWindow.
+[2025-07-17 17:47:16] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 17:47:18] [INFO] Welcome screen finished. Navigating to role selection.
+[2025-07-17 17:47:18] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 17:47:31] [INFO] Correct developer credentials entered.
+[2025-07-17 17:47:32] [INFO] Switched view to SemesterScreen.
+[2025-07-17 17:47:35] [INFO] Navigating back from Semester to Role Selection screen.
+[2025-07-17 17:47:35] [INFO] Switched view to RoleSelectionScreen.
+[2025-07-17 17:47:36] [INFO] Navigating back from Role Selection to Welcome screen.
+[2025-07-17 17:47:36] [INFO] Switched view to WelcomeWindow.
+[2025-07-17 17:47:46] [INFO] Application closed.

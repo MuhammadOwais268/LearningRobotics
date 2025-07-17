@@ -13,31 +13,43 @@ class SemesterScreen(tk.Frame):
         super().__init__(parent, bg="#f4f6f7")
         self.controller = controller
         
-        # --- Data File Path ---
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
         self.data_file = os.path.join(project_root, 'data', 'semesters.json')
 
         self.semesters = self.load_data()
-        self._selected_semester = None # Internal variable for the currently selected item
+        self._selected_semester = None
 
-        # --- UI Frames ---
-        self.semester_display_frame = tk.Frame(self, bg="#f4f6f7")
-        self.semester_display_frame.pack(pady=20, padx=20, fill="both", expand=True)
+        # --- Header Frame (for Title and Back Button) ---
+        header_frame = tk.Frame(self, bg="#f4f6f7")
+        header_frame.pack(pady=20, padx=20, fill="x")
+
+        # --- ADDED: Back Button ---
+        back_button = tk.Button(
+            header_frame, text="← Back to Role Selection", font=("Helvetica", 10),
+            fg="#34495e", bg="#f4f6f7", relief=tk.FLAT,
+            cursor="hand2", command=self.go_back
+        )
+        back_button.pack(side="left", anchor="n")
         
-        tk.Label(self.semester_display_frame, text="Select a Semester", font=("Helvetica", 24, "bold"), bg="#f4f6f7", fg="#2c3e50").pack(pady=(20, 30))
+        tk.Label(
+            header_frame, text="Select a Semester", font=("Helvetica", 24, "bold"),
+            bg="#f4f6f7", fg="#2c3e50"
+        ).pack(side="left", expand=True)
+
+        self.semester_display_frame = tk.Frame(self, bg="#f4f6f7")
+        self.semester_display_frame.pack(pady=(0, 20), padx=20, fill="both", expand=True)
 
         self.button_grid_frame = tk.Frame(self.semester_display_frame, bg="#f4f6f7")
         self.button_grid_frame.pack()
 
         self.dev_tools_frame = tk.Frame(self, bg="#e0e0e0", bd=2, relief=tk.GROOVE)
 
-        # --- Initialize UI Components ---
         self.setup_developer_tools()
         self.refresh_semester_buttons()
         self.bind("<<ShowFrame>>", self.on_show_frame)
 
     def on_show_frame(self, event):
-        """Called when the frame is raised. Shows/hides dev tools based on role."""
+        """Shows/hides dev tools based on role."""
         if self.controller.user_role == "developer":
             self.dev_tools_frame.pack(side="bottom", fill="x", padx=10, pady=10)
         else:
@@ -64,7 +76,6 @@ class SemesterScreen(tk.Frame):
         """Clears and re-creates the grid of semester buttons."""
         for widget in self.button_grid_frame.winfo_children():
             widget.destroy()
-
         for i, semester_name in enumerate(self.semesters):
             button = tk.Button(
                 self.button_grid_frame, text=semester_name, font=("Helvetica", 14),
@@ -72,41 +83,32 @@ class SemesterScreen(tk.Frame):
             )
             row, col = divmod(i, 4)
             button.grid(row=row, column=col, padx=10, pady=10)
-        
         self._reset_selection()
 
     def select_semester(self, semester_name):
         """Handles a click on a semester button."""
         if self.controller.user_role == 'developer':
-            # When a developer clicks, it's for editing or removing
             self._selected_semester = semester_name
-            # Update the dev tools UI to reflect the selection
             self._selected_label.config(text=f"Selected: {semester_name}")
             self._edit_entry.delete(0, 'end')
             self._edit_entry.insert(0, semester_name)
         else:
-            # For a normal user, it means proceeding
             messagebox.showinfo("Action", f"Proceeding to '{semester_name}'...", parent=self)
 
     def setup_developer_tools(self):
-        """Creates and organizes the widgets for the developer panel."""
+        """Creates the widgets for the developer panel."""
         tk.Label(self.dev_tools_frame, text="Developer Tools", font=("Helvetica", 14, "bold"), bg="#e0e0e0").pack(pady=5)
-
-        # --- Add New Semester Section ---
         add_frame = tk.Frame(self.dev_tools_frame, bg="#e0e0e0")
         add_frame.pack(pady=5, padx=10, fill='x')
         self._new_semester_entry = tk.Entry(add_frame, font=("Helvetica", 12))
         self._new_semester_entry.pack(side="left", ipady=4, expand=True, fill='x')
         tk.Button(add_frame, text="Add Semester", command=self.add_semester).pack(side="left", padx=10)
-        
-        # --- Edit/Remove Selected Semester Section ---
         edit_frame = tk.Frame(self.dev_tools_frame, bg="#e0e0e0")
         edit_frame.pack(pady=5, padx=10, fill='x')
         self._selected_label = tk.Label(edit_frame, text="Selected: None", font=("Helvetica", 10, "italic"), bg="#e0e0e0")
         self._selected_label.pack(anchor='w')
         self._edit_entry = tk.Entry(edit_frame, font=("Helvetica", 12))
         self._edit_entry.pack(pady=(5, 10), ipady=4, expand=True, fill='x')
-        
         button_bar = tk.Frame(edit_frame, bg="#e0e0e0")
         button_bar.pack(fill='x')
         tk.Button(button_bar, text="Update Name", command=self.edit_semester).pack(side="left", expand=True, fill='x')
@@ -115,12 +117,7 @@ class SemesterScreen(tk.Frame):
     def add_semester(self):
         """Adds a new semester."""
         new_name = self._new_semester_entry.get().strip()
-        if not new_name:
-            messagebox.showerror("Error", "Semester name cannot be empty.", parent=self)
-            return
-        if new_name in self.semesters:
-            messagebox.showerror("Error", "This semester already exists.", parent=self)
-            return
+        if not new_name or new_name in self.semesters: return
         self.semesters.append(new_name)
         self.save_data(self.semesters)
         self.refresh_semester_buttons()
@@ -128,48 +125,33 @@ class SemesterScreen(tk.Frame):
 
     def edit_semester(self):
         """Updates the name of the currently selected semester."""
-        if not self._selected_semester:
-            messagebox.showerror("Error", "No semester selected to edit.", parent=self)
-            return
-        
-        old_name = self._selected_semester
+        if not self._selected_semester: return
         new_name = self._edit_entry.get().strip()
-        
-        if not new_name:
-            messagebox.showerror("Error", "New name cannot be empty.", parent=self)
-            return
-        # Check if the new name is already taken by another semester
-        if new_name in self.semesters and new_name != old_name:
-            messagebox.showerror("Error", "Another semester with this name already exists.", parent=self)
-            return
-        
-        # Find the index of the old name and update it
+        if not new_name or (new_name in self.semesters and new_name != self._selected_semester): return
         try:
-            index = self.semesters.index(old_name)
+            index = self.semesters.index(self._selected_semester)
             self.semesters[index] = new_name
             self.save_data(self.semesters)
             self.refresh_semester_buttons()
-            logging.info(f"Developer edited semester '{old_name}' to '{new_name}'")
-            messagebox.showinfo("Success", f"'{old_name}' was successfully updated to '{new_name}'.", parent=self)
-        except ValueError:
-            messagebox.showerror("Error", "Could not find the original semester to edit. Please re-select.", parent=self)
-        
+        except ValueError: pass
         self._reset_selection()
         
     def remove_semester(self):
         """Removes the currently selected semester."""
-        if not self._selected_semester:
-            messagebox.showerror("Error", "No semester selected for removal.", parent=self)
-            return
-        if messagebox.askyesno("Confirm Removal", f"Are you sure you want to permanently remove '{self._selected_semester}'?"):
+        if not self._selected_semester: return
+        if messagebox.askyesno("Confirm Removal", f"Are you sure you want to remove '{self._selected_semester}'?"):
             self.semesters.remove(self._selected_semester)
             self.save_data(self.semesters)
             self.refresh_semester_buttons()
-            logging.info(f"Developer removed semester: '{self._selected_semester}'")
 
     def _reset_selection(self):
         """Clears the selection state in the developer tools UI."""
         self._selected_semester = None
-        if hasattr(self, '_selected_label'): # Check if dev tools are initialized
+        if hasattr(self, '_selected_label'):
             self._selected_label.config(text="Selected: None")
             self._edit_entry.delete(0, 'end')
+
+    def go_back(self):
+        """Navigates back to the RoleSelectionScreen."""
+        logging.info("Navigating back from Semester to Role Selection screen.")
+        self.controller.show_frame("RoleSelectionScreen")

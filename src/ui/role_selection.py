@@ -50,34 +50,38 @@ class RoleSelectionScreen(tk.Frame):
         self.message_label = tk.Label(login_frame, text="", font=("Helvetica", 10), bg="#f4f6f7")
         self.message_label.pack(pady=(10, 0))
 
+        # --- ADDED: Back button to return to the Welcome screen ---
+        back_button = tk.Button(
+            login_frame, text="← Back", font=("Helvetica", 10),
+            fg="#34495e", bg="#f4f6f7", relief=tk.FLAT,
+            cursor="hand2", command=self.go_back
+        )
+        back_button.pack(pady=(20, 0))
+
     def attempt_login(self):
         """
-        Checks the entered credentials and sets the role accordingly before
-        proceeding to the SemesterScreen.
+        Checks credentials and sets the role before proceeding to the SemesterScreen.
         """
         username = self.username_entry.get()
         password = self.password_entry.get()
-
-        # --- THIS IS THE FIX ---
-        # We give 'role' a default value of "user" at the start.
-        # This guarantees the variable always exists.
         role = "user"
 
         if username == self.DEVELOPER_USERNAME and password == self.DEVELOPER_PASSWORD:
-            # If credentials match, we overwrite the role to "developer".
             role = "developer"
             self.message_label.config(text="Developer login successful!", fg="green")
             logging.info("Correct developer credentials entered.")
         else:
-            # The role is already "user", so we just provide feedback.
             if username or password: 
                 self.message_label.config(text="Invalid credentials. Proceeding as User.", fg="red")
             else:
                 self.message_label.config(text="Proceeding as User.", fg="gray")
             logging.info("No/Invalid developer credentials. Defaulting to USER role.")
         
-        # Now, the 'role' variable is guaranteed to exist when we call this.
         self.controller.set_user_role(role)
-
-        # Proceed to the SemesterScreen
         self.after(1000, lambda: self.controller.show_frame("SemesterScreen"))
+
+    def go_back(self):
+        """Navigates back to the WelcomeWindow screen."""
+        logging.info("Navigating back from Role Selection to Welcome screen.")
+        self.message_label.config(text="") # Clear any error messages
+        self.controller.show_frame("WelcomeWindow")
