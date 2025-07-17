@@ -1,0 +1,20 @@
+[2025-07-17 15:18:34] [INFO] Starting WelcomeWindow...
+[2025-07-17 15:18:34] [ERROR] Failed to load image: couldn't recognize data in image file "/home/owais/LearningRobotics/assets/robot.jpg"
+[2025-07-17 15:41:08] [INFO] Starting application from main.py
+[2025-07-17 15:41:09] [ERROR] Failed to load image: couldn't recognize data in image file "/home/owais/LearningRobotics/assets/robot.jpg"
+[2025-07-17 15:41:18] [INFO] Continue button clicked. Going to next screen...
+[2025-07-17 15:41:23] [INFO] Continue button clicked. Going to next screen...
+[2025-07-17 15:41:24] [INFO] Continue button clicked. Going to next screen...
+[2025-07-17 15:41:25] [INFO] Continue button clicked. Going to next screen...
+[2025-07-17 15:48:56] [INFO] Starting application from main.py
+[2025-07-17 15:52:01] [INFO] Starting application from main.py (Welcome Screen only).
+[2025-07-17 15:56:36] [INFO] Starting application from main.py (Welcome Screen only).
+[2025-07-17 15:57:41] [INFO] Application closed.
+[2025-07-17 15:58:37] [INFO] Starting application from main.py (Welcome Screen only).
+[2025-07-17 15:59:46] [INFO] Continue button clicked. Transitioning away from WelcomeWindow.
+[2025-07-17 15:59:46] [INFO] Transition requested to 'SemesterScreen'. Closing application as it's the only screen.
+[2025-07-17 15:59:46] [INFO] Application closed.
+[2025-07-17 16:02:45] [INFO] Starting application from main.py (Welcome Screen only).
+[2025-07-17 16:02:47] [INFO] Continue button clicked. Transitioning away from WelcomeWindow.
+[2025-07-17 16:02:47] [INFO] Transition requested to 'SemesterScreen'. Closing application as it's the only screen.
+[2025-07-17 16:02:47] [INFO] Application closed.
