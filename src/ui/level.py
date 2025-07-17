@@ -1,129 +1,215 @@
 import tkinter as tk
-from tkinter import messagebox, Listbox, simpledialog
+from tkinter import messagebox, simpledialog
 import logging
 
 class LevelScreen(tk.Frame):
     """
-    Displays the levels (topics) for a selected semester like a table of contents.
-    Provides developer tools to add, edit, and remove levels.
+    A comprehensive screen that manages two views:
+    1. A 'list view' showing all levels for a semester.
+    2. A 'detail view' for selecting a path and confirming the choice.
     """
     def __init__(self, parent, controller):
         super().__init__(parent, bg="#f4f6f7")
         self.controller = controller
+        
+        # --- State Variables ---
         self.current_semester = None
+        self.current_level_name = None
 
-        # --- Header Frame ---
-        header_frame = tk.Frame(self, bg="#f4f6f7")
-        header_frame.pack(pady=20, padx=20, fill="x")
-        tk.Button(header_frame, text="← Back to Semesters", command=self.go_back).pack(side="left")
-        self.title_label = tk.Label(header_frame, text="Levels", font=("Helvetica", 24, "bold"), bg="#f4f6f7", fg="#2c3e50")
-        self.title_label.pack(side="left", expand=True)
+        # --- View Containers ---
+        self.list_view = tk.Frame(self, bg="#f4f6f7")
+        self.detail_view = tk.Frame(self, bg="#f4f6f7")
 
-        # --- Content Frame (Table of Contents) ---
-        content_frame = tk.Frame(self, bg="#f4f6f7")
-        content_frame.pack(pady=20, padx=20, fill="both", expand=True)
-        
-        self.level_listbox = Listbox(content_frame, font=("Helvetica", 14), bd=0, highlightthickness=0)
-        self.level_listbox.pack(side="left", fill="both", expand=True)
-        
-        scrollbar = tk.Scrollbar(content_frame, orient="vertical", command=self.level_listbox.yview)
-        scrollbar.pack(side="right", fill="y")
-        self.level_listbox.config(yscrollcommand=scrollbar.set)
+        for frame in (self.list_view, self.detail_view):
+            frame.grid(row=0, column=0, sticky="nsew")
 
-        # --- Developer Tools Frame ---
-        self.dev_tools_frame = tk.Frame(self, bg="#e0e0e0", bd=2, relief=tk.GROOVE)
-        self.setup_developer_tools()
+        # --- Build the UI for each view ---
+        self._create_list_view()
+        self._create_detail_view()
 
         self.bind("<<ShowFrame>>", self.on_show_frame)
 
+    # --- View Management ---
+
     def on_show_frame(self, event):
-        """Called when the frame is raised. Updates content for the current semester."""
+        """Called when this screen is raised. Sets up the initial view."""
         self.current_semester = self.controller.current_semester
         if not self.current_semester:
             logging.error("LevelScreen shown without a semester being set.")
             self.go_back()
             return
-        
-        self.title_label.config(text=f"Levels for {self.current_semester}")
-        self.refresh_level_list()
+        self.show_list_view()
 
-        if self.controller.user_role == "developer":
-            self.dev_tools_frame.pack(side="bottom", fill="x", padx=10, pady=10)
+    def show_list_view(self):
+        """Refreshes the level list and raises the list view frame."""
+        self.refresh_level_list()
+        self.list_view.tkraise()
+        is_dev = self.controller.user_role == "developer"
+        if is_dev:
+            self._add_level_button.pack(pady=20)
         else:
-            self.dev_tools_frame.pack_forget()
+            self._add_level_button.pack_forget()
+
+    def show_detail_view(self, level_name):
+        """Configures and raises the detail view frame for a specific level."""
+        self.current_level_name = level_name
+        all_data = self.controller.get_data()
+        level_data = all_data.get(self.current_semester, {}).get("levels", {}).get(level_name, {})
+        self._detail_title.config(text=f"🔍 Level: {level_name}")
+        self._detail_description.config(text=level_data.get("description", "No description available."))
+        self._path_choice.set("concept") # Default choice
+        is_dev = self.controller.user_role == "developer"
+        if is_dev:
+            self._detail_dev_tools.pack(pady=10, side="bottom")
+        else:
+            self._detail_dev_tools.pack_forget()
+        self.detail_view.tkraise()
+
+    # --- UI Creation ---
+
+    def _create_list_view(self):
+        """Builds the widgets for the 'Master' view showing all levels."""
+        header = tk.Frame(self.list_view, bg="#f4f6f7")
+        header.pack(pady=10, padx=20, fill='x')
+        tk.Label(header, text="📚 Levels of Learning", font=("Helvetica", 24, "bold"), bg="#f4f6f7", fg="#2c3e50").pack(side="left")
+        tools = tk.Frame(self.list_view, bg="#f4f6f7")
+        tools.pack(pady=5, padx=20, fill='x')
+        self._search_var = tk.StringVar()
+        self._search_var.trace("w", lambda n, i, m: self.refresh_level_list())
+        tk.Label(tools, text="🔍 Search:", bg="#f4f6f7").pack(side="left")
+        tk.Entry(tools, textvariable=self._search_var).pack(side="left", fill='x', expand=True, padx=5)
+        tk.Button(tools, text="🔃 Refresh", command=self.refresh_level_list).pack(side="left")
+        canvas = tk.Canvas(self.list_view, bg="#f4f6f7", highlightthickness=0)
+        scrollbar = tk.Scrollbar(self.list_view, orient="vertical", command=canvas.yview)
+        self._scrollable_frame = tk.Frame(canvas, bg="#f4f6f7")
+        self._scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=self._scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        canvas.pack(side="left", fill="both", expand=True, padx=20)
+        scrollbar.pack(side="right", fill="y")
+        self._add_level_button = tk.Button(self.list_view, text="+➕ Add New Level", command=self.add_level)
+
+    def _create_detail_view(self):
+        """Builds the widgets for the 'Detail' view for a single level."""
+        header = tk.Frame(self.detail_view, bg="#f4f6f7")
+        header.pack(pady=10, padx=20, fill='x')
+        tk.Button(header, text="← Back to List", command=self.show_list_view).pack(side="left")
+        self._detail_title = tk.Label(header, text="", font=("Helvetica", 24, "bold"), bg="#f4f6f7", fg="#2c3e50")
+        self._detail_title.pack(side="left", expand=True)
+
+        path_frame = tk.Frame(self.detail_view, bg="#ffffff", bd=1, relief="solid")
+        path_frame.pack(pady=10, padx=20, fill='x')
+        tk.Label(path_frame, text="Choose View:", font=("Helvetica", 12, "bold"), bg="white").pack(side="left", padx=10)
+        self._path_choice = tk.StringVar(value="concept")
+        tk.Radiobutton(path_frame, text="Concept", variable=self._path_choice, value="concept", bg="white", font=("Helvetica", 12)).pack(side="left")
+        
+        # --- THIS IS THE FIXED LINE ---
+        # The variable is now correctly set to self._path_choice
+        tk.Radiobutton(path_frame, text="Implementation", variable=self._path_choice, value="implementation", bg="white", font=("Helvetica", 12)).pack(side="left", padx=10)
+        # --- END OF FIX ---
+
+        desc_frame = tk.Frame(self.detail_view, bg="#f4f6f7")
+        desc_frame.pack(pady=10, padx=20, fill='both', expand=True)
+        tk.Label(desc_frame, text="📋 Level Description:", font=("Helvetica", 12, "bold"), bg="#f4f6f7").pack(anchor='w')
+        self._detail_description = tk.Label(desc_frame, text="", font=("Helvetica", 12), wraplength=550, justify="left", bg="#ffffff", anchor='nw', bd=1, relief='solid', padx=10, pady=10)
+        self._detail_description.pack(fill='both', expand=True)
+        
+        proceed_button = tk.Button(
+            self.detail_view, text="✓ Proceed with Selection", font=("Helvetica", 14, "bold"),
+            bg="#27ae60", fg="white", activebackground="#229954", activeforeground="white",
+            relief=tk.FLAT, command=self.confirm_path_selection
+        )
+        proceed_button.pack(pady=10, ipady=8, side="bottom")
+
+        self._detail_dev_tools = tk.Frame(self.detail_view, bg="#e0e0e0")
+        tk.Button(self._detail_dev_tools, text="✏️ Edit This Level", command=lambda: self.edit_level(self.current_level_name)).pack(side="left", padx=10, pady=5)
+        tk.Button(self._detail_dev_tools, text="❌ Delete This Level", command=lambda: self.remove_level(self.current_level_name), bg="#c0392b", fg="white").pack(side="left", padx=10, pady=5)
+
+    # --- Logic Methods ---
+
+    def confirm_path_selection(self):
+        """Shows a confirmation message based on the selected path."""
+        choice = self._path_choice.get()
+        level_name = self.current_level_name
+        
+        if choice == "concept":
+            message = f"You are going with the concept of '{level_name}'."
+        elif choice == "implementation":
+            message = f"You are going with the robot implementation of '{level_name}'."
+        else:
+            message = "No path selected."
+
+        messagebox.showinfo("Confirmation", message, parent=self)
+        logging.info(f"User confirmed path '{choice}' for level '{level_name}'.")
 
     def refresh_level_list(self):
-        """Loads levels for the current semester and populates the listbox."""
-        self.level_listbox.delete(0, 'end')
-        levels = self.controller.get_data().get(self.current_semester, {}).get("levels", {})
-        for level_name in levels:
-            self.level_listbox.insert('end', level_name)
+        """Clears and re-draws the level cards."""
+        for widget in self._scrollable_frame.winfo_children():
+            widget.destroy()
+        search_term = self._search_var.get().lower()
+        all_data = self.controller.get_data()
+        levels = all_data.get(self.current_semester, {}).get("levels", {})
+        for name, data in levels.items():
+            if search_term in name.lower():
+                self._create_level_card(self._scrollable_frame, name, data)
 
-    def setup_developer_tools(self):
-        """Creates the widgets for the developer panel."""
-        tk.Label(self.dev_tools_frame, text="Developer Tools", font=("Helvetica", 14, "bold"), bg="#e0e0e0").pack()
-        
-        button_bar = tk.Frame(self.dev_tools_frame, bg="#e0e0e0")
-        button_bar.pack(pady=10, fill='x', padx=10)
-        
-        tk.Button(button_bar, text="Add New Level", command=self.add_level).pack(side="left", expand=True, fill='x', padx=5)
-        tk.Button(button_bar, text="Edit Selected", command=self.edit_level).pack(side="left", expand=True, fill='x', padx=5)
-        tk.Button(button_bar, text="Remove Selected", command=self.remove_level, bg="#c0392b", fg="white").pack(side="left", expand=True, fill='x', padx=5)
+    def _create_level_card(self, parent, name, data):
+        """Creates a single 'card' widget for a level."""
+        card = tk.Frame(parent, bd=2, relief="solid", bg="white")
+        card.pack(fill='x', padx=10, pady=5)
+        left_frame = tk.Frame(card, bg="white")
+        left_frame.pack(side="left", expand=True, fill='x', padx=10, pady=10)
+        tk.Label(left_frame, text=f"▣ {name}", font=("Helvetica", 16, "bold"), bg="white", anchor='w').pack(fill='x')
+        tk.Label(left_frame, text=f"📝 {data.get('description', 'No description.')}", bg="white", anchor='w').pack(fill='x')
+        right_frame = tk.Frame(card, bg="white")
+        right_frame.pack(side="right", padx=10, pady=10)
+        tk.Button(right_frame, text="▶ Open", command=lambda n=name: self.show_detail_view(n)).pack(fill='x')
+        if self.controller.user_role == "developer":
+            dev_buttons = tk.Frame(right_frame, bg="white")
+            dev_buttons.pack(fill='x', pady=5)
+            tk.Button(dev_buttons, text="✏️ Edit", command=lambda n=name: self.edit_level(n)).pack(side="left")
+            tk.Button(dev_buttons, text="❌ Delete", command=lambda n=name: self.remove_level(n)).pack(side="left", padx=5)
 
     def add_level(self):
-        """Opens a dialog to add a new level."""
-        new_level = simpledialog.askstring("Add Level", "Enter the name for the new level:", parent=self)
-        if not new_level or not new_level.strip():
-            return
-
+        name = simpledialog.askstring("Add Level", "Enter name for the new level:", parent=self)
+        if not name or not name.strip(): return
+        desc = simpledialog.askstring("Add Description", f"Enter description for '{name}':", parent=self)
+        if desc is None: return
         data = self.controller.get_data()
-        if new_level in data[self.current_semester]["levels"]:
+        if name in data.get(self.current_semester, {}).get("levels", {}):
             messagebox.showerror("Error", "A level with this name already exists.", parent=self)
             return
-        
-        data[self.current_semester]["levels"][new_level] = {} # Add new level with empty content
+        data[self.current_semester]["levels"][name] = {"description": desc}
         self.controller.save_data(data)
         self.refresh_level_list()
-        logging.info(f"Developer added level '{new_level}' to '{self.current_semester}'")
 
-    def edit_level(self):
-        """Opens a dialog to edit the selected level."""
-        selected_index = self.level_listbox.curselection()
-        if not selected_index:
-            messagebox.showerror("Error", "Please select a level to edit.", parent=self)
-            return
-        
-        old_name = self.level_listbox.get(selected_index)
-        new_name = simpledialog.askstring("Edit Level", f"Enter the new name for '{old_name}':", initialvalue=old_name, parent=self)
-
-        if not new_name or not new_name.strip() or new_name == old_name:
-            return
-            
+    def edit_level(self, level_name):
         data = self.controller.get_data()
-        if new_name in data[self.current_semester]["levels"]:
-            messagebox.showerror("Error", "Another level with this name already exists.", parent=self)
-            return
-        
-        # Re-create the level content under the new name and delete the old one
-        data[self.current_semester]["levels"][new_name] = data[self.current_semester]["levels"].pop(old_name)
+        current_data = data.get(self.current_semester, {}).get("levels", {}).get(level_name, {})
+        new_name = simpledialog.askstring("Edit Name", "Enter new level name:", initialvalue=level_name, parent=self)
+        if not new_name or not new_name.strip(): return
+        new_desc = simpledialog.askstring("Edit Description", "Enter new description:", initialvalue=current_data.get("description", ""), parent=self)
+        if new_desc is None: return
+        if new_name != level_name:
+            if new_name in data[self.current_semester]["levels"]:
+                messagebox.showerror("Error", "Another level with this name already exists.", parent=self)
+                return
+            data[self.current_semester]["levels"][new_name] = data[self.current_semester]["levels"].pop(level_name)
+        data[self.current_semester]["levels"][new_name]['description'] = new_desc
         self.controller.save_data(data)
         self.refresh_level_list()
-        logging.info(f"Developer edited level '{old_name}' to '{new_name}' in '{self.current_semester}'")
+        if self.detail_view.winfo_ismapped():
+            self.show_detail_view(new_name)
 
-    def remove_level(self):
-        """Removes the selected level."""
-        selected_index = self.level_listbox.curselection()
-        if not selected_index:
-            messagebox.showerror("Error", "Please select a level to remove.", parent=self)
-            return
-            
-        level_name = self.level_listbox.get(selected_index)
-        if messagebox.askyesno("Confirm Removal", f"Are you sure you want to permanently remove the level '{level_name}'?"):
+    def remove_level(self, level_name):
+        if messagebox.askyesno("Confirm Removal", f"Are you sure you want to permanently remove '{level_name}'?"):
             data = self.controller.get_data()
-            del data[self.current_semester]["levels"][level_name]
-            self.controller.save_data(data)
-            self.refresh_level_list()
-            logging.info(f"Developer removed level '{level_name}' from '{self.current_semester}'")
+            if level_name in data.get(self.current_semester, {}).get("levels", {}):
+                del data[self.current_semester]["levels"][level_name]
+                self.controller.save_data(data)
+                self.refresh_level_list()
+                if self.detail_view.winfo_ismapped() and self.current_level_name == level_name:
+                    self.show_list_view()
 
     def go_back(self):
         """Navigates back to the SemesterScreen."""

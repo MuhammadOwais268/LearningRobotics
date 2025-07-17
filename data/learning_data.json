@@ -10,7 +10,10 @@
     },
     "Semester 3": {
         "levels": {
-            "Education": {}
+            "Education": {},
+            "Serial Printing": {
+                "description": ""
+            }
         }
     }
 }
