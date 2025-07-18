@@ -3,19 +3,24 @@
         "levels": {
             "Input/Output Operations": {
                 "implementation": {
-                    "explanation": "",
-                    "code": "# File: /home/owais/LearningRobotics/src/main.py\nimport tkinter as tk\nimport logging\nimport os\nimport json\n\nfrom ui.welcome import WelcomeWindow\nfrom ui.role_selection import RoleSelectionScreen\nfrom ui.semester import SemesterScreen\nfrom ui.level import LevelScreen\nfrom ui.concept import ConceptScreen\nfrom ui.implementation import ImplementationScreen\n\nlogging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')\n\nSCREENS = {\n    \"WelcomeWindow\": WelcomeWindow,\n    \"RoleSelectionScreen\": RoleSelectionScreen,\n    \"SemesterScreen\": SemesterScreen,\n    \"LevelScreen\": LevelScreen,\n    \"ConceptScreen\": ConceptScreen,\n    \"ImplementationScreen\": ImplementationScreen,\n}\n\nclass LearningRoboticsApp(tk.Tk):\n    def __init__(self, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.title(\"Learning Robotics\")\n        self.geometry(\"900x700\")\n\n        self.user_role = None\n        self.current_semester = None\n        self.current_level = None\n        \n        project_root = os.path.dirname(os.path.abspath(__file__))\n        self.data_file = os.path.join(project_root, '..', 'data', 'learning_data.json')\n        self.app_data = self.get_data()\n\n        container = tk.Frame(self)\n        container.pack(side=\"top\", fill=\"both\", expand=True)\n        container.grid_rowconfigure(0, weight=1)\n        container.grid_columnconfigure(0, weight=1)\n\n        self.frames = {}\n        for F_name, F_class in SCREENS.items():\n            frame = F_class(container, self)\n            self.frames[F_name] = frame\n            frame.grid(row=0, column=0, sticky=\"nsew\")\n        \n        self.show_frame(\"WelcomeWindow\")\n\n    def show_frame(self, frame_name):\n        logging.info(f\"Attempting to switch view to {frame_name}.\")\n        frame = self.frames[frame_name]\n        frame.event_generate(\"<<ShowFrame>>\")\n        frame.tkraise()\n        logging.info(f\"Successfully switched view to {frame_name}.\")\n    \n    def set_user_role(self, role):\n        self.user_role = role\n        logging.info(f\"User role set to: '{role}'\")\n\n    def set_current_semester(self, semester_name):\n        self.current_semester = semester_name\n        logging.info(f\"Current semester set to: '{semester_name}'\")\n\n    def set_current_selection(self, level=None):\n        if level: \n            self.current_level = level\n            logging.info(f\"Current level set to: '{level}'\")\n\n    def get_data(self):\n        try:\n            with open(self.data_file, 'r') as f:\n                return json.load(f)\n        except (FileNotFoundError, json.JSONDecodeError):\n            default_data = {\n                \"Fall Semester 2025\": {\n                    \"levels\": {\n                        \"First Level\": {\n                            \"description\": \"An example level.\",\n                            \"concept\": {\"explanation\": \"Concept explanation...\", \"code\": \"// Concept code...\", \"output\": \"\"},\n                            \"implementation\": {\"explanation\": \"Implementation explanation...\", \"code\": \"// Implementation code...\"}\n                        }\n                    }\n                }\n            }\n            self.save_data(default_data)\n            return default_data\n\n    def save_data(self, data):\n        os.makedirs(os.path.dirname(self.data_file), exist_ok=True)\n        with open(self.data_file, 'w') as f:\n            json.dump(data, f, indent=4)\n        self.app_data = data\n        logging.info(f\"Data saved to '{self.data_file}'\")\n\nif __name__ == \"__main__\":\n    logging.info(\"Starting application.\")\n    app = LearningRoboticsApp()\n    app.mainloop()\n    logging.info(\"Application closed.\")"
+                    "explanation": "\ud83d\udd0d Explanation\nSerial.begin(115200)\nInitializes serial communication at a baud rate of 115200.\n\nThis allows communication between the ESP32 and your computer so you can see the output in the Serial Monitor.\n\nSerial.println(\"Hello, World!\");\nSends the string \"Hello, World!\" to the serial monitor, followed by a new line.\n\ndelay(1000);\nWaits for 1000 milliseconds (1 second) before repeating the loop.",
+                    "code": "#include <Arduino.h>  // Includes the core Arduino functions\n\nvoid setup() {\n  Serial.begin(9600);  // Start Serial communication at 115200 baud\n  Serial.println(\"Setup complete. Starting Hello World...\");\n}\n\nvoid loop() {\n  Serial.println(\"Hello, World!\");  // Print Hello, World! to the Serial Monitor\n  delay(1000);                      // Wait for 1 second\n}\n"
                 },
                 "concept": {
                     "explanation": "ghhgggggghghgghhg",
-                    "code": "",
-                    "output": ""
+                    "code": "bjbjhbhbhj",
+                    "output": "crcxdfxfx"
                 }
             },
             "Variables & Data Types": {
                 "implementation": {
                     "explanation": "",
                     "code": "how are you"
+                },
+                "concept": {
+                    "explanation": "vvhghvghvhgv",
+                    "code": "gvghvgvgh",
+                    "output": "gvcccfcfgcgf"
                 }
             }
         }

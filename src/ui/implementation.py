@@ -56,7 +56,7 @@ class ImplementationScreen(tk.Frame):
         project_root = os.path.dirname(os.path.abspath(__file__))
         self.pio_project_path = os.path.join(project_root, '..', 'Robotics')
         self.pio_manager = PlatformIOManager(self.pio_project_path, self.output_queue)
-        self.paste_buttons = []  # Store paste buttons for dynamic control
+        self.paste_buttons = []
         self._create_widgets()
         self.bind("<<ShowFrame>>", self.on_show_frame)
 
@@ -122,17 +122,8 @@ class ImplementationScreen(tk.Frame):
                     self.terminal_output.config(state='disabled')
 
                     if "--- SUCCESS ---" in line and self.last_command == "upload":
-                        try:
-                            cmd = ['pio', 'device', 'list', '--json-output', '--serial']
-                            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.pio_project_path)
-                            devices = json.loads(result.stdout)
-                            port = devices[0]['port']
-                            self.output_notebook.select(0)
-                            self.pio_manager.start_serial_monitor(port)
-                        except (IndexError, json.JSONDecodeError):
-                            self.serial_monitor.config(state='normal')
-                            self.serial_monitor.insert('end', "Upload successful, but could not find a serial port to monitor.")
-                            self.serial_monitor.config(state='disabled')
+                        # **MODIFIED CODE**: Call the new smart monitor function
+                        self.prompt_and_start_monitor()
 
                 elif msg_type == 'serial':
                     self.serial_monitor.config(state='normal')
@@ -143,6 +134,60 @@ class ImplementationScreen(tk.Frame):
             pass
         finally:
             self.after(100, self.process_output_queue)
+
+    # **NEW METHOD**
+    def prompt_and_start_monitor(self):
+        """Gets a list of serial devices and either auto-connects or prompts the user."""
+        try:
+            cmd = ['pio', 'device', 'list', '--json-output']
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True, cwd=self.pio_project_path)
+            devices = json.loads(result.stdout)
+
+            if not devices:
+                messagebox.showwarning("Not Found", "Upload successful, but no serial devices were found connected to your computer.")
+                return
+            
+            if len(devices) == 1:
+                port = devices[0]['port']
+                self.output_notebook.select(0)
+                self.pio_manager.start_serial_monitor(port)
+            else:
+                self.show_port_selection_dialog(devices)
+
+        except (subprocess.CalledProcessError, json.JSONDecodeError, FileNotFoundError) as e:
+            messagebox.showerror("Device List Error", f"Could not get the list of serial devices.\nError: {e}")
+
+    # **NEW METHOD**
+    def show_port_selection_dialog(self, devices):
+        """Creates a pop-up window for the user to select a serial port."""
+        dialog = tk.Toplevel(self)
+        dialog.title("Select Port")
+        dialog.geometry("350x150")
+        dialog.transient(self) # Keep dialog on top of the main window
+        dialog.grab_set()
+
+        tk.Label(dialog, text="Multiple devices found.\nPlease select the correct port to monitor:", pady=10).pack()
+
+        port_options = [f"{d['port']} ({d.get('description', 'No description')})" for d in devices]
+        port_map = {f"{d['port']} ({d.get('description', 'No description')})": d['port'] for d in devices}
+
+        combobox = ttk.Combobox(dialog, values=port_options, state="readonly", width=40)
+        combobox.pack(pady=5)
+        combobox.current(0)
+
+        def on_connect():
+            selection = combobox.get()
+            if selection:
+                port_to_connect = port_map[selection]
+                dialog.destroy()
+                self.output_notebook.select(0)
+                self.pio_manager.start_serial_monitor(port_to_connect)
+
+        btn_frame = tk.Frame(dialog)
+        btn_frame.pack(pady=10)
+        tk.Button(btn_frame, text="Connect", command=on_connect).pack(side='left', padx=10)
+        tk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side='left', padx=10)
+
 
     def _create_widgets(self):
         header = tk.Frame(self, bg="#e0e0e0")
@@ -265,14 +310,12 @@ class ImplementationScreen(tk.Frame):
         return frame
 
     def update_paste_buttons(self):
-        """Show or hide paste buttons based on developer mode and edit mode."""
         for paste_button in self.paste_buttons:
             paste_button.pack_forget()
             if self.controller.user_role == "developer" and self.is_in_edit_mode:
                 paste_button.pack(side='left', padx=10)
 
     def paste_into_widget(self, target_widget):
-        """Pastes content from the clipboard into the specified text widget."""
         if not self.is_in_edit_mode:
             messagebox.showinfo("Read-Only Mode", "Please click '✏️ Edit Content' before pasting.")
             return
