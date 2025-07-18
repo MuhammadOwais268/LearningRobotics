@@ -1,34 +1,84 @@
 {
-    "Semester 1": {
+    "Basic C++": {
         "levels": {
-            "Input/Output Operations": {
-                "implementation": {
-                    "explanation": "\ud83d\udd0d Explanation\nSerial.begin(115200)\nInitializes serial communication at a baud rate of 115200.\n\nThis allows communication between the ESP32 and your computer so you can see the output in the Serial Monitor.\n\nSerial.println(\"Hello, World!\");\nSends the string \"Hello, World!\" to the serial monitor, followed by a new line.\n\ndelay(1000);\nWaits for 1000 milliseconds (1 second) before repeating the loop.",
-                    "code": "#include <Arduino.h>  // Includes the core Arduino functions\n\nvoid setup() {\n  Serial.begin(9600);  // Start Serial communication at 115200 baud\n  Serial.println(\"Setup complete. Starting Hello World...\");\n}\n\nvoid loop() {\n  Serial.println(\"Hello, World!\");  // Print Hello, World! to the Serial Monitor\n  delay(1000);                      // Wait for 1 second\n}\n"
-                },
+            "First C++ Program": {
+                "description": "Hello World it swas first ever written program",
                 "concept": {
-                    "explanation": "ghhgggggghghgghhg",
-                    "code": "bjbjhbhbhj",
-                    "output": "crcxdfxfx"
+                    "explanation": "Code Explanation:\n#include <iostream>: Prepares your program to use tools for input and output.\n\nint main(): Defines the main function where the program begins. int means it will return an integer value when it's done.\n\nstd::cout: This is the \"standard character output\" stream, which usually means the console or terminal. The std:: part means cout is \n\nlocated in the standard (std) namespace.\n\n<<: The stream insertion operator. It \"inserts\" the data on its right into the stream on its left.\n\nstd::endl: Inserts a newline character, so the next output will start on a new line.\n\nreturn 0;: This is a status code sent to the operating system. A return value of 0 conventionally means \"everything went okay.\"",
+                    "code": "// Include the Input/Output Stream library\n#include <iostream>\n\n// All C++ programs start execution in the main function\nint main() {\n    // std::cout sends text to the console.\n    // << is the stream insertion operator.\n    // \"Hello, World!\" is the text to be printed.\n    // std::endl adds a new line and flushes the output.\n    std.cout << \"Hello, World!\" << std::endl;\n\n    // Return 0 to indicate that the program finished successfully.\n    return 0;\n}",
+                    "output": "Hello, World!"
+                },
+                "implementation": {
+                    "explanation": "New implementation explanation...",
+                    "code": "// New implementation code..."
                 }
             },
-            "Variables & Data Types": {
-                "implementation": {
-                    "explanation": "",
-                    "code": "how are you"
-                },
+            "Variables & Datatypes": {
+                "description": "This program demonstrates how to declare and use variables of different fundamental types",
                 "concept": {
-                    "explanation": "vvhghvghvhgv",
-                    "code": "gvghvgvgh",
-                    "output": "gvcccfcfgcgf"
+                    "explanation": "This program demonstrates how to declare and use variables of different fundamental types.\n\nA variable is a named storage location for data.\n\nint age = 25;: Declares an integer variable age to hold whole numbers.\n\ndouble temperature = 98.6;: Declares a double-precision floating-point variable temperature for numbers with decimal points.\n\nchar grade = 'A';: Declares a character variable grade to hold a single character (enclosed in single quotes).\n\nbool isStudent = true;: Declares a boolean variable isStudent which can only be true or false. When printed, true is output as 1 and \nfalse as 0.\n\nstd::string name = \"John Doe\";: Declares a string variable name for holding text (enclosed in double quotes). You must #include \n\n<string> to use it.\n",
+                    "code": "#include <iostream>\n#include <string> // Required for using the string data type\n\nint main() {\n    int age = 25;\n    double temperature = 98.6;\n    char grade = 'A';\n    bool isStudent = true;\n    std::string name = \"John Doe\";\n\n    std::cout << \"Name: \" << name << std::endl;\n    std::cout << \"Age: \" << age << std::endl;\n    std::cout << \"Is a student? \" << isStudent << std::endl; // Prints 1 for true\n\n    return 0;\n}",
+                    "output": "Name: John Doe\nAge: 25\nIs a student? 1"
+                },
+                "implementation": {
+                    "explanation": "New implementation explanation...",
+                    "code": "// New implementation code..."
+                }
+            },
+            "Basic Input/Output (I/O)": {
+                "description": "This program interacts with the user by reading their input from the console",
+                "concept": {
+                    "explanation": "Explanation\n\nThis program interacts with the user by reading their input from the console.\n\nstd::cin is the standard character input stream (the keyboard).\n\nstd::getline(std::cin, userName);: This is the recommended way to read a full line of text, including spaces. It reads from std::cin and \n\nstores the result in the userName variable.\n\nstd::cin >> userAge;: The stream extraction operator >> reads data from the input and stores it in the variable. It stops reading when \n\nit encounters whitespace (like a space or newline), making it suitable for single words or numbers.\n",
+                    "code": "#include <iostream>\n#include <string>\n\nint main() {\n    int userAge;\n    std::string userName;\n\n    std::cout << \"Please enter your name: \";\n    std::getline(std::cin, userName);\n\n    std::cout << \"Please enter your age: \";\n    std::cin >> userAge;\n\n    std::cout << \"\\nHello, \" << userName << \"!\" << std::endl;\n    std::cout << \"You are \" << userAge << \" years old.\" << std::endl;\n\n    return 0;\n}",
+                    "output": "Please enter your name: Jane Smith\nPlease enter your age: 30\n\nHello, Jane Smith!\nYou are 30 years old."
+                },
+                "implementation": {
+                    "explanation": "New implementation explanation...",
+                    "code": "// New implementation code..."
+                }
+            },
+            "Conditionals": {
+                "description": "This program makes a decision based on users input",
+                "concept": {
+                    "explanation": "Explanation\n\nThis program makes a decision based on the user's input.\n\nThe if statement checks a condition. If score >= 90 is true, its code block is executed, and the rest of the chain is skipped.\n\nIf the if condition is false, the program proceeds to the else if statement and checks its condition.\n\nThe else block is a catch-all. It executes only if all the preceding if and else if conditions in the chain were false. This creates a branching path in the program's logic.\n",
+                    "code": "#include <iostream>\n\nint main() {\n    int score;\n    std::cout << \"Enter your test score (0-100): \";\n    std::cin >> score;\n\n    if (score >= 90) {\n        std::cout << \"You got an A!\" << std::endl;\n    }\n    else if (score >= 80) {\n        std::cout << \"You got a B.\" << std::endl;\n    }\n    else {\n        std::cout << \"You need to study more.\" << std::endl;\n    }\n\n    return 0;\n}",
+                    "output": "Enter your test score (0-100): 85\nYou got a B."
+                },
+                "implementation": {
+                    "explanation": "New implementation explanation...",
+                    "code": "// New implementation code..."
+                }
+            },
+            "Loops": {
+                "description": "This program demonstrates the two most common types of loops",
+                "concept": {
+                    "explanation": "Explanation\n\nThis program demonstrates the two most common types of loops.\n\nA for loop is ideal when you know exactly how many times you want to repeat an action. The statement for (int i = 1; i <= 4; ++i) does three things: 1) initializes i to 1, 2) sets the condition to loop as long as i is less than or equal to 4, and 3) increments i after each loop iteration.\n\nA while loop is used to repeat as long as a condition remains true. The loop checks while (countdown > 0) before each iteration. The value of countdown must be changed inside the loop to prevent it from running forever (an infinite loop).",
+                    "code": "#include <iostream>\n\nint main() {\n    // --- for loop ---\n    std::cout << \"--- For Loop ---\" << std::endl;\n    for (int i = 1; i <= 4; ++i) {\n        std::cout << \"Iteration number \" << i << std::endl;\n    }\n\n    // --- while loop ---\n    std::cout << \"\\n--- While Loop ---\" << std::endl;\n    int countdown = 3;\n    while (countdown > 0) {\n        std::cout << countdown << \"...\" << std::endl;\n        countdown = countdown - 1; // or countdown--;\n    }\n    std::cout << \"Lift off!\" << std::endl;\n\n    return 0;\n}",
+                    "output": "--- For Loop ---\nIteration number 1\nIteration number 2\nIteration number 3\nIteration number 4\n\n--- While Loop ---\n3...\n2...\n1...\nLift off!"
+                },
+                "implementation": {
+                    "explanation": "New implementation explanation...",
+                    "code": "// New implementation code..."
+                }
+            },
+            "Functions": {
+                "description": "This program defines and uses a function to make the code more organized and reusable",
+                "concept": {
+                    "explanation": "This program defines and uses a function to make the code more organized and reusable.\n\nFunction Declaration: int add(int num1, int num2); is a prototype that tells the compiler about the function before main uses it. It \nspecifies the function's name, the data types of its parameters (int, int), and its return type (int).\n\nFunction Call: In main, the line int sum = add(a, b); executes the function. The values of a and b are passed as arguments. The function's return value is captured in the sum variable.\n\nFunction Definition: This is the actual block of code that runs when the function is called. It takes the arguments, performs the addition, and uses the return keyword to send the result back to the caller.\n",
+                    "code": "#include <iostream>\n\n// Function Declaration (Prototype)\nint add(int num1, int num2);\n\nint main() {\n    int a = 5;\n    int b = 7;\n\n    // Function Call\n    int sum = add(a, b);\n\n    std::cout << \"The sum is \" << sum << std::endl;\n    return 0;\n}\n\n// Function Definition\nint add(int num1, int num2) {\n    return num1 + num2;\n}```\n\n",
+                    "output": "#### Expected Output\n```text\nThe sum is 12"
+                },
+                "implementation": {
+                    "explanation": "New implementation explanation...",
+                    "code": "// New implementation code..."
                 }
             }
         }
     },
-    "Semester 2": {
+    "OPP": {
         "levels": {}
     },
-    "Semester 3": {
+    "Algorithm": {
         "levels": {
             "Education": {},
             "Serial Printing": {

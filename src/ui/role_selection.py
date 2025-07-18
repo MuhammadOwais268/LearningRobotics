@@ -72,9 +72,9 @@ class RoleSelectionScreen(tk.Frame):
             logging.info("Correct developer credentials entered.")
         else:
             if username or password: 
-                self.message_label.config(text="Invalid credentials. Proceeding as User.", fg="red")
+                self.message_label.config(text="Invalid credentials. Proceeding as User.", fg="green")
             else:
-                self.message_label.config(text="Proceeding as User.", fg="gray")
+                self.message_label.config(text="Proceeding as User.", fg="red")
             logging.info("No/Invalid developer credentials. Defaulting to USER role.")
         
         self.controller.set_user_role(role)
