@@ -1,0 +1,10 @@
+{
+    "Owais@gmail.com": {
+        "password_hash": "scrypt:32768:8:1$AmSGfs8yKUB882ot$3a991ec62f5427ac520916198562f719d259fc9a8c5c22f0369b7be58e0c366433b7c72d0d9d5a7ebf4b7387750b855f39013af0d29bbc0aea31e5983c102985",
+        "role": "developer"
+    },
+    "test": {
+        "password_hash": "scrypt:32768:8:1$HY59pyrtxFyyGenk$af18b720e523202605ad7736005a9086294b5e88d246a114649e0bcf4adb74d91830a53011e9bcdda68b061d6bfae7d955d7bf9a10a92c255fab5a3740e6b893",
+        "role": "student"
+    }
+}

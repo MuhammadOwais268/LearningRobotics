@@ -1,14 +1,10 @@
-# File: ui/level.py
+# File: src/ui/level.py (CORRECTED)
 
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 import logging
 
 class LevelScreen(tk.Frame):
-    """
-    Manages a list view of all levels for a semester.
-    This screen acts as a navigator to the Concept and Implementation screens.
-    """
     def __init__(self, parent, controller):
         super().__init__(parent, bg="#f0f0f0")
         self.controller = controller
@@ -18,21 +14,23 @@ class LevelScreen(tk.Frame):
         self.bind("<<ShowFrame>>", self.on_show_frame)
 
     def on_show_frame(self, event=None):
-        """Called when the frame is shown. Sets the semester and refreshes the list."""
+        """CORRECTED: Now correctly shows dev tools in offline mode."""
         self.current_semester = self.controller.current_semester
         if not self.current_semester:
             logging.error("LevelScreen shown without a semester being set.")
             self.go_back()
             return
+            
         self.refresh_level_list()
-        is_dev = self.controller.user_role == "developer"
+        
+        is_dev = self.controller.current_user.get('role') == "developer"
+        # The 'Add Level' button should be visible for developers in BOTH online and offline mode.
         if is_dev:
             self._add_level_button.pack(side="bottom", pady=10, padx=20, fill='x', ipady=5)
         else:
             self._add_level_button.pack_forget()
 
     def _create_list_view(self):
-        """Builds the widgets for the list view with a centered layout."""
         header_frame = tk.Frame(self, bg="#f0f0f0")
         header_frame.pack(side="top", fill="x", padx=10, pady=10)
         tk.Button(header_frame, text="← Back to Semesters", command=self.go_back).pack(side="left")
@@ -69,18 +67,19 @@ class LevelScreen(tk.Frame):
         self._scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
 
     def refresh_level_list(self):
-        """Clears and re-populates the scrollable list of level cards."""
         for widget in self._scrollable_frame.winfo_children():
             widget.destroy()
         
-        levels = self.controller.get_data().get(self.current_semester, {}).get("levels", {})
+        # Use the app_data loaded by the controller
+        semesters_data = self.controller.app_data.get(self.current_semester, {})
+        levels = semesters_data.get("levels", {})
+
         for name, data in levels.items():
             if self._search_var.get().lower() in name.lower():
                 self._create_level_card(self._scrollable_frame, name, data)
         self.controller.update_idletasks()
 
     def _create_level_card(self, parent, name, data):
-        """Creates a card for a level with 'Concept' and 'Implementation' buttons."""
         card = tk.Frame(parent, bd=2, relief="solid", bg="white")
         card.pack(fill='x', padx=10, pady=5)
         
@@ -95,15 +94,15 @@ class LevelScreen(tk.Frame):
         tk.Button(right_frame, text="View Concept", width=18, command=lambda n=name: self.go_to_concept(n)).pack(fill='x', ipady=2)
         tk.Button(right_frame, text="View Implementation", width=18, command=lambda n=name: self.go_to_implementation(n)).pack(fill='x', ipady=2, pady=(5,0))
         
-        if self.controller.user_role == "developer":
+        if self.controller.current_user.get('role') == "developer":
             tk.Button(right_frame, text="❌ Delete Level", fg="red", command=lambda n=name: self.remove_level(n)).pack(pady=(10,0))
 
     def go_to_concept(self, level_name):
-        self.controller.set_current_selection(level=level_name)
+        self.controller.current_level = level_name
         self.controller.show_frame("ConceptScreen")
 
     def go_to_implementation(self, level_name):
-        self.controller.set_current_selection(level=level_name)
+        self.controller.current_level = level_name
         self.controller.show_frame("ImplementationScreen")
 
     def add_level(self):
@@ -127,7 +126,7 @@ class LevelScreen(tk.Frame):
         self.refresh_level_list()
 
     def remove_level(self, level_name):
-        if messagebox.askyesno("Confirm Removal", f"Are you sure you want to permanently remove '{level_name}' and all its content?"):
+        if messagebox.askyesno("Confirm Removal", f"Are you sure you want to permanently remove '{level_name}'?"):
             data = self.controller.get_data()
             if level_name in data.get(self.current_semester, {}).get("levels", {}):
                 del data[self.current_semester]["levels"][level_name]

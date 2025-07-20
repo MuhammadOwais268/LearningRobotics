@@ -1,21 +1,29 @@
-# File: /home/owais/LearningRobotics/src/main.py
+# File: src/main.py
+
 import tkinter as tk
+from tkinter import messagebox
 import logging
 import os
 import json
 
-from ui.welcome import WelcomeWindow
-from ui.role_selection import RoleSelectionScreen
-from ui.semester import SemesterScreen
-from ui.level import LevelScreen
-from ui.concept import ConceptScreen
-from ui.implementation import ImplementationScreen
+# <<< CORRECTED IMPORTS: Note the dots '.' at the beginning
+from .network_client import NetworkClient
+from .ui.welcome import WelcomeWindow
+from .ui.signup_screen import SignupScreen # Corrected filename from 'signup'
+from .ui.login_screen import LoginScreen
+from .ui.mode_selection_screen import ModeSelectionScreen
+from .ui.semester import SemesterScreen
+from .ui.level import LevelScreen
+from .ui.concept import ConceptScreen
+from .ui.implementation import ImplementationScreen
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 SCREENS = {
     "WelcomeWindow": WelcomeWindow,
-    "RoleSelectionScreen": RoleSelectionScreen,
+    "SignupScreen": SignupScreen,
+    "LoginScreen": LoginScreen,
+    "ModeSelectionScreen": ModeSelectionScreen,
     "SemesterScreen": SemesterScreen,
     "LevelScreen": LevelScreen,
     "ConceptScreen": ConceptScreen,
@@ -28,14 +36,18 @@ class LearningRoboticsApp(tk.Tk):
         self.title("Learning Robotics")
         self.geometry("900x700")
 
-        self.user_role = None
-        self.current_semester = None
-        self.current_level = None
-        
-        project_root = os.path.dirname(os.path.abspath(__file__))
-        self.data_file = os.path.join(project_root, '..', 'data', 'learning_data.json')
-        self.app_data = self.get_data()
+        # --- NEW State Management ---
+        self.current_user = None # Will store {'email': '...', 'role': '...'}
+        self.is_online = False
+        self.current_class_code = None
+        self.network_client = NetworkClient(self)
+        self.app_data = {} # Holds the current curriculum (local or online)
 
+        # --- Local Data Setup ---
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        self.local_data_file = os.path.join(project_root, '..', 'data', 'learning_data.json')
+
+        # --- UI Container Setup ---
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
@@ -50,53 +62,98 @@ class LearningRoboticsApp(tk.Tk):
         self.show_frame("WelcomeWindow")
 
     def show_frame(self, frame_name):
-        logging.info(f"Attempting to switch view to {frame_name}.")
+        logging.info(f"Switching view to {frame_name}.")
         frame = self.frames[frame_name]
         frame.event_generate("<<ShowFrame>>")
         frame.tkraise()
-        logging.info(f"Successfully switched view to {frame_name}.")
-    
-    def set_user_role(self, role):
-        self.user_role = role
-        logging.info(f"User role set to: '{role}'")
 
-    def set_current_semester(self, semester_name):
-        self.current_semester = semester_name
-        logging.info(f"Current semester set to: '{semester_name}'")
+    def on_login_success(self, user_data):
+        self.current_user = user_data
+        logging.info(f"Login success. User: {self.current_user['email']}, Role: {self.current_user['role']}")
+        self.show_frame("ModeSelectionScreen")
 
-    def set_current_selection(self, level=None):
-        if level: 
-            self.current_level = level
-            logging.info(f"Current level set to: '{level}'")
+    def set_online_mode(self, class_code=None, is_new_class=False):
+        self.is_online = True
+        if is_new_class:
+            local_data = self._get_local_data()
+            response = self.network_client.create_class(local_data)
+            if response and response.get("success"):
+                self.current_class_code = response.get("class_code")
+                self.app_data = local_data
+                messagebox.showinfo("Class Created", f"New class created! Your Class Code is: {self.current_class_code}")
+                self.network_client.start_live_feed()
+                self.show_frame("SemesterScreen")
+            else:
+                messagebox.showerror("Error", f"Could not create class: {response.get('message')}")
+                self.is_online = False
+        elif class_code:
+            self.current_class_code = class_code
+            self.network_client.start_live_feed()
+            self.show_frame("SemesterScreen")
+
+    def set_offline_mode(self):
+        self.is_online = False
+        self.current_class_code = None
+        self.network_client.stop_live_feed()
+        self.show_frame("SemesterScreen")
+        
+    def logout(self):
+        self.current_user = None
+        self.is_online = False
+        self.current_class_code = None
+        self.network_client.logout_user()
+        self.show_frame("LoginScreen")
 
     def get_data(self):
+        if self.is_online:
+            response = self.network_client.get_class_data(self.current_class_code)
+            if response and response.get("success"):
+                self.app_data = response.get("curriculum", {})
+            else:
+                messagebox.showerror("Error", f"Failed to fetch class data: {response.get('message')}")
+                self.app_data = {}
+        else:
+            self.app_data = self._get_local_data()
+        return self.app_data
+        
+    def save_data(self, data_to_save):
+        self.app_data = data_to_save
+        if self.is_online:
+            if self.current_user.get('role') != 'developer': return
+            response = self.network_client.update_class_data(self.current_class_code, self.app_data)
+            if not response or not response.get("success"):
+                 messagebox.showerror("Error", f"Failed to save data to server: {response.get('message')}")
+        else:
+            self._save_local_data(self.app_data)
+    
+    def _get_local_data(self):
         try:
-            with open(self.data_file, 'r') as f:
+            with open(self.local_data_file, 'r') as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
-            default_data = {
-                "Fall Semester 2025": {
-                    "levels": {
-                        "First Level": {
-                            "description": "An example level.",
-                            "concept": {"explanation": "Concept explanation...", "code": "// Concept code...", "output": ""},
-                            "implementation": {"explanation": "Implementation explanation...", "code": "// Implementation code..."}
-                        }
-                    }
-                }
-            }
-            self.save_data(default_data)
-            return default_data
-
-    def save_data(self, data):
-        os.makedirs(os.path.dirname(self.data_file), exist_ok=True)
-        with open(self.data_file, 'w') as f:
+            return {"Default Semester (Offline)": {"levels": {}}}
+    
+    def _save_local_data(self, data):
+        os.makedirs(os.path.dirname(self.local_data_file), exist_ok=True)
+        with open(self.local_data_file, 'w') as f:
             json.dump(data, f, indent=4)
-        self.app_data = data
-        logging.info(f"Data saved to '{self.data_file}'")
+            
+    def update_student_count_display(self, count):
+        semester_screen = self.frames.get("SemesterScreen")
+        if semester_screen:
+            semester_screen.update_student_count(count)
+    # In src/main.py
 
+    # Find the logout method and replace it with this one
+    def logout(self):
+        self.current_user = None
+        self.is_online = False
+        self.current_class_code = None
+        self.network_client.logout_user()
+        self.app_data = {} # ADD THIS LINE to clear old data
+        self.show_frame("LoginScreen")
+
+# <<< CORRECTED PLACEMENT of the main loop
 if __name__ == "__main__":
-    logging.info("Starting application.")
-    app = LearningRoboticsApp()
-    app.mainloop()
-    logging.info("Application closed.")
+     app = LearningRoboticsApp()
+     app.mainloop()

@@ -1,0 +1,13 @@
+2025-07-18 20:59:21,840 - INFO - --- Application Starting ---
+2025-07-18 20:59:22,459 - INFO - Switching view to WelcomeWindow.
+2025-07-18 20:59:24,627 - INFO - Welcome screen finished. Navigating to role selection.
+2025-07-18 20:59:24,627 - INFO - Switching view to RoleSelectionScreen.
+2025-07-18 20:59:29,283 - INFO - User selected 'Work Offline'.
+2025-07-18 20:59:29,283 - INFO - Switching view to SemesterScreen.
+2025-07-18 20:59:32,810 - INFO - Switching view to RoleSelectionScreen.
+2025-07-18 21:00:04,265 - INFO - User selected 'Work Offline'.
+2025-07-18 21:00:04,265 - INFO - Switching view to SemesterScreen.
+2025-07-18 21:00:05,161 - INFO - Current semester set to: 'Basic C++'
+2025-07-18 21:00:05,162 - INFO - Switching view to LevelScreen.
+2025-07-18 21:00:15,616 - INFO - Switching view to SemesterScreen.
+2025-07-18 21:00:18,090 - INFO - --- Application Closed ---
