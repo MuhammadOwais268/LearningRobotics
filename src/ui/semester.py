@@ -1,5 +1,3 @@
-# File: src/ui/semester.py (CORRECTED)
-
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 import logging
@@ -16,6 +14,7 @@ class SemesterScreen(tk.Frame):
         header_frame.pack(side="top", fill="x", padx=10, pady=10)
         
         tk.Button(header_frame, text="← Back to Mode Selection", command=self.go_back).pack(side="left")
+        tk.Button(header_frame, text="Refresh", command=self.refresh_data, font=("Helvetica", 10), bg="#3498db", fg="white").pack(side="left", padx=5)
 
         self.student_count_label = tk.Label(header_frame, text="Visible Students: 0", font=("Helvetica", 10), bg="#f4f6f7")
         self.student_count_label.pack(side="right", padx=10)
@@ -34,6 +33,12 @@ class SemesterScreen(tk.Frame):
         self.setup_developer_tools()
 
         self.bind("<<ShowFrame>>", self.on_show_frame)
+
+    def refresh_data(self):
+        """Manually refresh semester data and UI."""
+        self.controller.get_data()
+        self.refresh_semester_buttons()
+        self.update_dev_tool_states()
 
     def on_show_frame(self, event):
         """REWRITTEN: Correct logic for all roles and modes."""
@@ -76,7 +81,6 @@ class SemesterScreen(tk.Frame):
         self.controller.network_client.stop_live_feed()
         self.controller.show_frame("ModeSelectionScreen")
 
-    # ... (the rest of the file is unchanged and correct) ...
     def refresh_semester_buttons(self):
         for widget in self.button_grid_frame.winfo_children(): widget.destroy()
         semesters = self.controller.app_data.keys()
