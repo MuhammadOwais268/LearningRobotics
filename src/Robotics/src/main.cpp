@@ -1,27 +1,58 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include <VL53L0X.h> // Include the Pololu sensor library
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-// Most ESP32 boards have a built-in LED connected to GPIO pin 2.
-// The 'LED_BUILTIN' variable is a shortcut for this pin number.
-const int ledPin = LED_BUILTIN;
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
 
-// The setup() function runs once when you press reset or power the board
+VL53L0X sensor;
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+// A variable of datatype 'int' to store a whole number
+int distance_mm = 0; 
+// A variable of datatype 'bool' to store a true/false value
+bool sensor_ok = false;
+
 void setup() {
-  // Initialize the digital pin as an output.
-  // This tells the ESP32 that we will be sending signals OUT of this pin.
-  pinMode(ledPin, OUTPUT);
+  Wire.begin();
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+
+  // Initialize the sensor and store the result in our boolean variable
+  sensor.setTimeout(500);
+  if (sensor.init()) {
+    sensor_ok = true;
+    sensor.startContinuous();
+  }
+  
+  // Display status based on the boolean variable's value
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  if (sensor_ok) {
+    display.println("Sensor... OK");
+  } else {
+    display.println("Sensor... FAILED");
+  }
+  display.display();
+  delay(2000);
 }
 
-// The loop() function runs over and over again forever
 void loop() {
-  // Turn the LED on by making the voltage HIGH
-  digitalWrite(ledPin, HIGH);
+  // Store the latest sensor reading in our integer variable
+  distance_mm = sensor.readRangeContinuousMillimeters();
 
-  // Wait for one second (1000 milliseconds)
-  delay(1000);
-
-  // Turn the LED off by making the voltage LOW
-  digitalWrite(ledPin, LOW);
-
-  // Wait for another second
-  delay(1000);
+  // Display the content of the variable on the screen
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setCursor(0, 0);
+  display.print("Dist:");
+  display.setCursor(0, 20);
+  display.print(distance_mm); // This prints the number stored in the variable
+  display.print(" mm");
+  display.display();
+  
+  delay(100);
 }

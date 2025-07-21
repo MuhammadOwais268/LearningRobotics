@@ -1,13 +1,75 @@
-# File: src/ui/implementation.py (with Refresh)
+# File: src/ui/implementation.py (with Syntax Highlighting)
 
 import tkinter as tk
 from tkinter import ttk, messagebox
-import threading, queue, time, subprocess, os, json
-import serial, logging
+import threading, queue, time, subprocess, os, json, re # <-- Import 're' for regex
+import serial
 
-# --- PlatformIOManager Class (Unchanged) ---
+# ==============================================================================
+# <<< NEW: SYNTAX HIGHLIGHTER CLASS >>>
+# ==============================================================================
+class SyntaxHighlighter:
+    def __init__(self, text_widget):
+        self.text = text_widget
+        self.text.bind('<KeyRelease>', self.on_key_release)
+
+        # A simple theme similar to a default dark theme
+        self.theme = {
+            'normal':       {'foreground': '#FFFFFF', 'background': '#2b2b2b'},
+            'keyword':      {'foreground': '#CC7832'}, # Orange for keywords
+            'comment':      {'foreground': '#808080'}, # Gray for comments
+            'string':       {'foreground': '#A5C25C'}, # Green for strings
+            'number':       {'foreground': '#6897BB'}, # Blue for numbers
+            'preprocessor': {'foreground': '#8A653B'}, # Brown for #include, #define
+        }
+        
+        # Configure the tags in the Text widget with the theme colors
+        for tag, colors in self.theme.items():
+            self.text.tag_configure(tag, **colors)
+
+        # Regex rules for different C++ elements
+        self.rules = {
+            'preprocessor': r'(#.*?)\n',
+            'comment': r'(\/\/.*?)\n|(/\*[\s\S]*?\*/)',
+            'keyword': r'\b(void|int|char|float|double|bool|const|unsigned|long|short|return|if|else|for|while|do|break|continue|struct|class|public|private|protected|new|delete|true|false|HIGH|LOW|OUTPUT|INPUT|pinMode|digitalWrite|analogWrite|delay|setup|loop)\b',
+            'string': r'(\".*?\")',
+            'number': r'\b([0-9]+)\b',
+        }
+
+    def on_key_release(self, event=None):
+        """Called every time the user releases a key."""
+        self.highlight()
+
+    def highlight(self):
+        """Finds all regex matches and applies the colored tags."""
+        # Get the full range of text
+        start_index = "1.0"
+        end_index = "end"
+
+        # Remove all tags first to prevent stacking/old tags
+        for tag in self.theme.keys():
+            self.text.tag_remove(tag, start_index, end_index)
+
+        # Apply the 'normal' tag to all text by default
+        self.text.tag_add('normal', start_index, end_index)
+        
+        # Iterate through the rules and apply tags for each match
+        # The order matters (e.g., find comments before keywords)
+        for token_type, pattern in self.rules.items():
+            for match in re.finditer(pattern, self.text.get(start_index, end_index)):
+                start, end = match.span()
+                # Convert character index to Tkinter Text index format
+                match_start = f"{start_index}+{start}c"
+                match_end = f"{start_index}+{end}c"
+                
+                # Add the specific tag for this token type
+                self.text.tag_add(token_type, match_start, match_end)
+
+# ==============================================================================
+# PlatformIOManager Class (Unchanged)
+# ==============================================================================
 class PlatformIOManager:
-    # ... (This class is complete and correct) ...
+    # ... (This class is complete and correct from the previous version) ...
     def __init__(self, project_path, output_queue): self.project_path = project_path; self.output_queue = output_queue; self.serial_port = None; self.stop_serial_event = threading.Event()
     def _run_command(self, command):
         try:
@@ -37,7 +99,9 @@ class PlatformIOManager:
     def stop_serial_monitor(self): self.stop_serial_event.set()
 
 
-# --- ImplementationScreen Class (with Refresh) ---
+# ==============================================================================
+# ImplementationScreen Class (Modified to use the highlighter)
+# ==============================================================================
 class ImplementationScreen(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg="#e0e0e0")
@@ -51,34 +115,26 @@ class ImplementationScreen(tk.Frame):
         self._create_widgets()
         self.bind("<<ShowFrame>>", self.on_show_frame)
 
-    def on_show_frame(self, event=None):
-        self.load_content()
-        self.update_developer_options()
-        self.after(100, self.process_output_queue)
-
     def _create_widgets(self):
-        header = tk.Frame(self, bg="#e0e0e0")
-        main = tk.Frame(self, bg="white")
-        controls = tk.Frame(self, bg="#ccc", relief='raised', bd=1)
-        header.pack(side='top', fill='x', padx=5, pady=5)
-        controls.pack(side='bottom', fill='x', ipady=5)
-        main.pack(side='top', fill='both', expand=True, padx=5, pady=5)
-        
-        tk.Button(header, text="← Back", command=self.go_back).pack(side='left')
-
-        # <<< NEW REFRESH BUTTON >>>
-        tk.Button(header, text="🔄 Refresh", command=self.refresh_content).pack(side="left", padx=5)
-
-        self.header_label = tk.Label(header, font=("Helvetica", 18, "bold"), bg="#e0e0e0")
-        self.header_label.pack(side='left', padx=20)
+        # ... (Header, controls, main frame setup is the same) ...
+        header = tk.Frame(self, bg="#e0e0e0"); main = tk.Frame(self, bg="white"); controls = tk.Frame(self, bg="#ccc", relief='raised', bd=1)
+        header.pack(side='top', fill='x', padx=5, pady=5); controls.pack(side='bottom', fill='x', ipady=5); main.pack(side='top', fill='both', expand=True, padx=5, pady=5)
+        tk.Button(header, text="← Back", command=self.go_back).pack(side='left'); tk.Button(header, text="🔄 Refresh", command=self.refresh_content).pack(side="left", padx=5)
+        self.header_label = tk.Label(header, font=("Helvetica", 18, "bold"), bg="#e0e0e0"); self.header_label.pack(side='left', padx=20)
         self.dev_edit_button = tk.Button(header, text="✏️ Edit Content", command=self.enter_edit_mode)
         self.dev_save_button = tk.Button(header, text="💾 Save Changes", command=lambda: self.exit_edit_mode(save=True))
-
-        # ... (rest of the widget creation is unchanged) ...
+        
         v_pane = ttk.PanedWindow(main, orient='vertical'); v_pane.pack(fill='both', expand=True)
         top_frame = tk.Frame(v_pane); h_pane = ttk.PanedWindow(top_frame, orient='horizontal'); h_pane.pack(fill='both', expand=True); v_pane.add(top_frame, weight=3)
         code_frame = self.create_pane_section(h_pane, "Implementation Code", paste_command=lambda: self.paste_into_widget(self.code_editor))
-        self.code_editor = self.create_text_widget(code_frame, bg="#2b2b2b", fg="#ffffff", font_family="Courier"); h_pane.add(code_frame, weight=2)
+        
+        # Create the code editor text widget
+        self.code_editor = self.create_text_widget(code_frame, bg="#2b2b2b", fg="#ffffff", font_family="Courier")
+        
+        # <<< NEW: ATTACH THE SYNTAX HIGHLIGHTER >>>
+        self.highlighter = SyntaxHighlighter(self.code_editor)
+        
+        h_pane.add(code_frame, weight=2)
         exp_frame = self.create_pane_section(h_pane, "Implementation Details", paste_command=lambda: self.paste_into_widget(self.exp_text))
         self.exp_text = self.create_text_widget(exp_frame, wrap='word', font_family="Helvetica"); h_pane.add(exp_frame, weight=1)
         output_notebook = ttk.Notebook(v_pane); v_pane.add(output_notebook, weight=1)
@@ -87,21 +143,24 @@ class ImplementationScreen(tk.Frame):
         self.compile_button = tk.Button(controls, text="▶️ Compile", command=self.compile_code); self.upload_button = tk.Button(controls, text="⬆️ Upload", command=self.upload_code)
         self.compile_button.pack(side='left', padx=20, pady=5); self.upload_button.pack(side='left', padx=20, pady=5)
 
-    # <<< NEW REFRESH METHOD >>>
+    def load_content(self):
+        # ... (Same as before) ...
+        level_name = self.controller.current_level; self.header_label.config(text=f"Implementation: {level_name}")
+        impl_data = self.controller.get_data().get(self.controller.current_semester,{}).get("levels",{}).get(level_name,{}).get("implementation",{})
+        self.exp_text.config(state='normal'); self.code_editor.config(state='normal')
+        self.exp_text.delete(1.0,'end'); self.code_editor.delete(1.0,'end')
+        self.exp_text.insert('end', impl_data.get("explanation","")); self.code_editor.insert('end', impl_data.get("code",""))
+        if not self.is_in_edit_mode: self.exp_text.config(state='disabled'); self.code_editor.config(state='disabled')
+        
+        # <<< NEW: Trigger highlighting after loading new content >>>
+        self.highlighter.highlight()
+    
+    # ... (All other methods in ImplementationScreen are unchanged and correct from the previous version)
+    def on_show_frame(self, event=None): self.load_content(); self.update_developer_options(); self.after(100, self.process_output_queue)
     def refresh_content(self):
-        """Reloads content, but prevents data loss if user is editing or a process is running."""
-        logging.info("Refreshing implementation content.")
-        if self.is_in_edit_mode:
-            messagebox.showwarning("Refresh Blocked", "Please save or cancel your changes before refreshing.")
-            return
-        if self.is_process_running:
-            messagebox.showwarning("Refresh Blocked", "Cannot refresh while a compile or upload process is running.")
-            return
-
-        self.load_content()
-        messagebox.showinfo("Refreshed", "Implementation content has been updated.")
-
-    # ... (the rest of the file is unchanged from the last correct version) ...
+        if self.is_in_edit_mode: messagebox.showwarning("Refresh Blocked", "Please save or cancel your changes before refreshing."); return
+        if self.is_process_running: messagebox.showwarning("Refresh Blocked", "Cannot refresh while a process is running."); return
+        self.load_content(); messagebox.showinfo("Refreshed", "Implementation content has been updated.")
     def process_output_queue(self):
         try:
             while True:
@@ -131,16 +190,7 @@ class ImplementationScreen(tk.Frame):
             selection = combobox.get()
             if selection: port_to_connect = port_map[selection]; dialog.destroy(); self.output_notebook.select(0); self.pio_manager.start_serial_monitor(port_to_connect)
         btn_frame = tk.Frame(dialog); btn_frame.pack(pady=10)
-        tk.Button(btn_frame, text="Connect", command=on_connect).pack(side='left', padx=10)
-        tk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side='left', padx=10)
-    def load_content(self):
-        level_name = self.controller.current_level
-        self.header_label.config(text=f"Implementation: {level_name}")
-        impl_data = self.controller.get_data().get(self.controller.current_semester,{}).get("levels",{}).get(level_name,{}).get("implementation",{})
-        self.exp_text.config(state='normal'); self.code_editor.config(state='normal')
-        self.exp_text.delete(1.0,'end'); self.code_editor.delete(1.0,'end')
-        self.exp_text.insert('end', impl_data.get("explanation","")); self.code_editor.insert('end', impl_data.get("code",""))
-        if not self.is_in_edit_mode: self.exp_text.config(state='disabled'); self.code_editor.config(state='disabled')
+        tk.Button(btn_frame, text="Connect", command=on_connect).pack(side='left', padx=10); tk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side='left', padx=10)
     def update_developer_options(self):
         self.dev_edit_button.pack_forget(); self.dev_save_button.pack_forget()
         is_dev = self.controller.current_user.get('role') == "developer"
@@ -149,8 +199,7 @@ class ImplementationScreen(tk.Frame):
             else: self.dev_edit_button.pack(side='right', padx=10)
         else: self.is_in_edit_mode = False
         self.update_paste_buttons(); self.update_button_states()
-    def enter_edit_mode(self):
-        self.is_in_edit_mode = True; self.exp_text.config(state='normal'); self.code_editor.config(state='normal'); self.update_developer_options()
+    def enter_edit_mode(self): self.is_in_edit_mode = True; self.exp_text.config(state='normal'); self.code_editor.config(state='normal'); self.update_developer_options()
     def exit_edit_mode(self, save=True):
         if save:
             data = self.controller.get_data()
@@ -168,8 +217,11 @@ class ImplementationScreen(tk.Frame):
         self.controller.show_frame("LevelScreen")
     def paste_into_widget(self, target_widget):
         if not self.is_in_edit_mode: return
-        try: clipboard_content = self.clipboard_get(); target_widget.delete(1.0, 'end'); target_widget.insert('end', clipboard_content)
-        except tk.TclError: messagebox.showwarning("Paste Error", "Clipboard is empty.")
+        try:
+            clipboard_content = self.clipboard_get()
+            if target_widget == self.code_editor: target_widget.delete(1.0, 'end'); target_widget.insert('end', clipboard_content); self.highlighter.highlight()
+            else: target_widget.delete(1.0, 'end'); target_widget.insert('end', clipboard_content)
+        except tk.Toplevel: messagebox.showwarning("Paste Error", "Clipboard is empty.")
     def update_paste_buttons(self):
         is_dev_editing = self.controller.current_user.get('role') == "developer" and self.is_in_edit_mode
         for paste_button in self.paste_buttons:
