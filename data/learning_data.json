@@ -85,5 +85,8 @@
                 "description": ""
             }
         }
+    },
+    "Control System": {
+        "levels": {}
     }
 }
