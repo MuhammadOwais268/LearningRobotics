@@ -1,27 +1,32 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-// Most ESP32 boards have a built-in LED connected to GPIO pin 2.
-// The 'LED_BUILTIN' variable is a shortcut for this pin number.
-const int ledPin = LED_BUILTIN;
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
 
-// The setup() function runs once when you press reset or power the board
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
 void setup() {
-  // Initialize the digital pin as an output.
-  // This tells the ESP32 that we will be sending signals OUT of this pin.
-  pinMode(ledPin, OUTPUT);
+  // Start I2C communication (required for the OLED)
+  Wire.begin();
+
+  // Initialize the display
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    for (;;); // If it fails, halt the program
+  }
+
+  // --- Main Actions ---
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(10, 10);
+  display.println("Hello");
+  display.println(" Robot!");
+  display.display(); // Push the text to the screen
 }
 
-// The loop() function runs over and over again forever
 void loop() {
-  // Turn the LED on by making the voltage HIGH
-  digitalWrite(ledPin, HIGH);
-
-  // Wait for one second (1000 milliseconds)
-  delay(1000);
-
-  // Turn the LED off by making the voltage LOW
-  digitalWrite(ledPin, LOW);
-
-  // Wait for another second
-  delay(1000);
+  // The screen is static, so nothing needs to be repeated here.
 }
