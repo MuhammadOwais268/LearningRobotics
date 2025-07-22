@@ -1,0 +1,15 @@
+[h1]VL53L0X.cpp (Source File)[/h1]
+
+This file contains the **implementation** of all the functions that were declared in `VL53L0X.h`. While the header file is the "what" (what you can do), this source file is the "how" (how it gets done).
+
+[h2]Concept: Encapsulation[/h2]
+
+The `.cpp` file is where the details are hidden. When you call a simple function like `sensor.init()`, the code inside this file is what actually runs. It sends dozens of specific I2C commands and writes to special memory addresses (called registers) on the sensor to configure it correctly.
+
+This is **Encapsulation** in action: all the complex logic is bundled up and hidden away inside the class methods.
+
+[h2]What to Look For[/h2]
+
+As you scroll through this file, you will see many functions that start with `writeReg`, `readReg`, `writeMulti`, etc. These are the low-level functions that are actually communicating with the sensor over the I2C bus.
+
+You don't need to understand every line, but it's important to see that a simple command from your `main.cpp` can result in a large amount of complex work being done "under the hood" by the library.

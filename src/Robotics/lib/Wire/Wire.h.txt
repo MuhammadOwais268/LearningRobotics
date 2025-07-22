@@ -1,0 +1,32 @@
+[h1]Wire.h (I2C Communication)[/h1]
+
+This is a **core Arduino framework library**. It is not a third-party library but is built into the ESP32's board support package. Its purpose is to handle all communication using the **I2C (Inter-Integrated Circuit)** protocol.
+
+[h2]Concept: A Communication Protocol[/h2]
+
+Think of I2C as a language and a set of rules for talking on a two-wire party line.
+
+*   **Two Wires:** It only requires two signal wires to connect multiple devices:
+    *   [b]SDA (Serial Data):[/b] The wire that the actual data is sent across.
+    *   [b]SCL (Serial Clock):[/b] A wire that carries a timing pulse to keep all devices synchronized.
+*   **Master/Slave:** One device, usually your ESP32, acts as the "master." All other devices on the line (like your OLED and distance sensor) are "slaves."
+*   **Addresses:** Every slave device has a unique address (like a house number). When the master wants to talk to a specific device, it first broadcasts that device's address onto the line.
+
+The `Wire.h` library provides the functions to act as the master and manage this communication.
+
+[h2]Key Functions Declared Here[/h2]
+
+*   [c]void begin()[/c]
+    This is the most important function. It initializes the ESP32's I2C hardware and makes it the "master" on the bus. You [b]must[/b] call this in `setup()` before communicating with any I2C device.
+
+*   [c]void beginTransmission(uint8_t address)[/c]
+    This opens a line of communication with a specific slave device. For example, `Wire.beginTransmission(0x3C)` tells all devices on the bus that the ESP32 now wants to talk to the device at address `0x3C` (the OLED).
+
+*   [c]size_t write(uint8_t data)[/c]
+    Sends one byte of data to the device you are currently talking to.
+
+*   [c]uint8_t endTransmission(void)[/c]
+    Sends all the queued data from `.write()` calls and ends the communication session.
+
+*   [c]uint8_t requestFrom(uint8_t address, uint8_t quantity)[/c]
+    Used to ask a slave device to send data back to the master.

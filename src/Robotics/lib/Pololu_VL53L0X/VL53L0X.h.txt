@@ -1,0 +1,23 @@
+[h1]VL53L0X.h (Header File)[/h1]
+
+This file is the public **"interface"** or **"contract"** for the Pololu VL53L0X distance sensor library. It's like a table of contents that tells the compiler what functions are available to you.
+
+[h2]Concept: Abstraction[/h2]
+
+This header file is a perfect example of **Abstraction**. It hides all the complex, low-level details of how the sensor works (like I2C communication and laser timing) and gives you a set of simple, high-level commands.
+
+When you write `#include <VL53L0X.h>` in your code, you are telling the compiler to read this file. This allows you to create a `VL53L0X` object and call its public methods.
+
+[h2]Key Functions Declared Here[/h2]
+
+*   [c]bool init()[/c]
+    This function initializes the sensor. It must be called in `setup()` before you can get any readings. It returns [b]true[/b] if the sensor is found and successfully started.
+
+*   [c]void startContinuous()[/c]
+    This function puts the sensor into a continuous measurement mode, where it takes readings as fast as possible. This is more efficient for our robot than starting and stopping it for every reading.
+
+*   [c]uint16_t readRangeContinuousMillimeters()[/c]
+    This is the main function you will use in your `loop()`. It returns the most recent distance measurement in millimeters as an unsigned 16-bit integer ([c]uint16_t[/c]).
+
+*   [c]bool timeoutOccurred()[/c]
+    A very important function for checking if the last reading was successful. If the sensor takes too long to get a reading (e.g., the target is too far away), this function will return [b]true[/b].
