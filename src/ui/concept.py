@@ -68,7 +68,17 @@ class ConceptScreen(tk.Frame):
         self._create_widgets()
         self.bind("<<ShowFrame>>", self.on_show_frame)
 
+    # NEW version in concept.py
     def on_show_frame(self, event=None):
+        """Called when the frame is shown. Loads content and saves progress."""
+        # <<< ADD THIS BLOCK to save the user's location >>>
+        if self.controller.current_user and self.controller.current_semester and self.controller.current_level:
+            self.controller.save_last_viewed(
+                self.controller.current_semester,
+                self.controller.current_level,
+                "concept" # The type of screen being viewed
+            )
+
         self.load_content()
         self.update_developer_options()
 

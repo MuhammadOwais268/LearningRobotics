@@ -1,0 +1,21 @@
+[h1]Adafruit_GFX.cpp (Implementation)[/h1]
+
+This source file contains the actual C++ code that implements all the powerful drawing functions declared in `Adafruit_GFX.h`.
+
+[h2]Concept: Algorithmic Implementation[/h2]
+
+This file is a fantastic example of how high-level concepts are turned into low-level algorithms.
+
+When you call a simple function like [c]drawLine(0, 0, 10, 5, WHITE)[/c], the code inside this file runs a famous computer graphics algorithm called the **Bresenham's line algorithm**. This algorithm efficiently calculates which individual pixels need to be turned on to create the appearance of a straight line between two points.
+
+Similarly, the `drawCircle()` function uses a **midpoint circle algorithm** to calculate the pixels for a circle.
+
+[h2]How It Connects to the Child Class[/h2]
+
+The key to how this works is that all these complex algorithms (for lines, circles, text) are built on top of the most basic function: `drawPixel()`.
+
+The `Adafruit_GFX` class does not know how to physically turn a pixel on. It leaves that job to its child class (your `Adafruit_SSD1306` driver).
+
+When `drawLine()` calculates that it needs to turn on the pixel at coordinate (5, 3), it simply calls `drawPixel(5, 3, WHITE)`. Because of **polymorphism**, the program knows to execute the `drawPixel()` version from the `Adafruit_SSD1306` child class, which then sends the correct I2C command to the physical screen.
+
+This is a masterful design that separates the generic math of drawing from the specific hardware commands needed to control a screen.

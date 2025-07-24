@@ -1,0 +1,33 @@
+[h1]Adafruit_GFX.h (Graphics Library)[/h1]
+
+This is the Adafruit Graphics Library. It is a powerful **parent class** that provides a standard set of drawing functions for many different types of screens, including OLEDs, LCDs, and LED matrices.
+
+[h2]Concept: A Reusable Parent Class (Inheritance)[/h2]
+
+The purpose of this library is **code reuse**. Instead of writing the complex logic for drawing text, lines, or circles for every single screen type, Adafruit wrote it once in this generic `Adafruit_GFX` class.
+
+Specific screen driver libraries (like `Adafruit_SSD1306` for your OLED) then **inherit** from this class.
+
+The only function the child class *must* implement is the most basic one: [c]drawPixel()[/c]. Once the child class teaches GFX how to draw a single pixel on its specific hardware, it automatically gets all the other advanced drawing capabilities (lines, text, circles, etc.) for free from this GFX parent.
+
+[h2]Key Functions You Use from This Library[/h2]
+
+Even though you create an `Adafruit_SSD1306` object in your code, many of the functions you call on it are actually **inherited** from this `Adafruit_GFX` parent class:
+
+*   [c]void setCursor(int16_t x, int16_t y)[/c]
+    Sets the top-left corner for where the next text will be printed.
+
+*   [c]void setTextColor(uint16_t color)[/c]
+    Sets the color for text. For monochrome OLEDs, your only options are `WHITE` (on) or `BLACK` (off).
+
+*   [c]void setTextSize(uint8_t size)[/c]
+    Sets the font size. `1` is the smallest (6x8 pixels per character), `2` is twice as big, etc.
+
+*   [c]size_t println(const char* s)[/c]
+    Prints a line of text to the screen buffer.
+
+*   [c]void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color)[/c]
+    Draws a line from one point to another.
+
+*   [c]void drawRect(...), fillRect(...), drawCircle(...), fillCircle(...)[/c]
+    Functions for drawing basic geometric shapes.
