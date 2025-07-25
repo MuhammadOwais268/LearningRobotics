@@ -1,13 +1,28 @@
 {
     "Owais@gmail.com": {
         "last_viewed": {
-            "semester": "Basic C++",
-            "level": "Basic Input/Output (I/O)",
-            "type": "concept"
+            "semester": "Control System",
+            "level": "Autonomous Obstacle Avoidance using Control Loops",
+            "type": "implementation"
         },
         "completed_levels": [],
         "visited_levels": [
-            "Basic C++/Basic Input/Output (I/O)"
+            "Basic C++/Basic Input/Output (I/O)",
+            "Control System/Closed loop vs Open loop Control",
+            "Control System/First-Order System Response",
+            "Control System/Second-Order System Response",
+            "Control System/PID Control (Propotional-Integrtion-Derivative)",
+            "Control System/Steady State Error",
+            "Control System/State-Space Representation",
+            "Control System/Controllability and Observability",
+            "Control System/Ziegler-Nichols PID Tuning",
+            "Control System/Transient and Steady-State Respoonse",
+            "Control System/State Machine Control for Behavior Logic",
+            "Control System/Lead-Lag Compensation (brief intro for tuning logic)",
+            "Control System/OLED-Based Feedback Visualization",
+            "Control System/Sensor Noise Handling & Filtering",
+            "Control System/System Stability: Oscillation and Damping",
+            "Control System/Autonomous Obstacle Avoidance using Control Loops"
         ]
     }
 }
