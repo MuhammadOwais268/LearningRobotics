@@ -2,3 +2,5 @@
 
 requests
 Pillow
+pyserial
+ollama

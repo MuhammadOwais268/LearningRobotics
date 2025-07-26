@@ -2,8 +2,8 @@
     "Owais@gmail.com": {
         "last_viewed": {
             "semester": "Control System",
-            "level": "Second-Order System Response",
-            "type": "concept"
+            "level": "Closed loop vs Open loop Control",
+            "type": "implementation"
         },
         "completed_levels": [],
         "visited_levels": [
@@ -22,7 +22,8 @@
             "Control System/OLED-Based Feedback Visualization",
             "Control System/Sensor Noise Handling & Filtering",
             "Control System/System Stability: Oscillation and Damping",
-            "Control System/Autonomous Obstacle Avoidance using Control Loops"
+            "Control System/Autonomous Obstacle Avoidance using Control Loops",
+            "Basic C++/First C++ Program"
         ]
     }
 }
